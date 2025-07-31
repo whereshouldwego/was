@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>채팅 테스트</title>
+</head>
+<body>
+<h2>실시간 채팅</h2>
+
+<!-- 사용자 입력 영역 -->
+<input type="number" id="userId" placeholder="유저 ID (숫자만)">
+<input type="text" id="roomId" placeholder="채팅방 코드">
+<button onclick="connect()">채팅 연결</button>
+
+<!-- 채팅 영역 -->
+<br><br>
+<textarea id="chat" rows="15" cols="70" readonly></textarea><br>
+<input type="text" id="messageInput" placeholder="메시지를 입력하세요">
+<button onclick="sendMessage()">보내기</button>
+
+<!-- 라이브러리 로드 -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+    let stompClient = null;
+    let subscription = null;
+
+    async function connect() {
+        const roomId = document.getElementById('roomId').value.trim();
+        if (!roomId) {
+            alert("채팅방 코드를 입력하세요.");
+            return;
+        }
+
+        // 채팅창 초기화
+        document.getElementById('chat').value = '';
+
+        // ✅ 이전 채팅 기록 불러오기
+        try {
+            const res = await fetch('/history/' + roomId);
+            if (res.ok) {
+                const messages = await res.json();
+                messages.forEach(msg => {
+                    const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
+                    document.getElementById('chat').value += display;
+                });
+            } else {
+                console.warn("이전 메시지를 불러오지 못했습니다.");
+            }
+        } catch (e) {
+            console.error("채팅 기록 요청 실패:", e);
+        }
+
+        // 기존 연결 해제
+        if (stompClient !== null && stompClient.connected) {
+            if (subscription) {
+                subscription.unsubscribe();
+                console.log("이전 구독 해제됨.");
+            }
+            stompClient.disconnect(() => {
+                console.log("기존 연결 종료됨.");
+                connectStomp(roomId); // 재연결
+            });
+        } else {
+            connectStomp(roomId);
+        }
+    }
+
+    function connectStomp(roomId) {
+        const socket = new SockJS('/ws');
+        stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function () {
+            subscription = stompClient.subscribe('/topic/chat/' + roomId, function (message) {
+                const msg = JSON.parse(message.body);
+                const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
+                document.getElementById('chat').value += display;
+            });
+
+            console.log(`채팅방 "${roomId}"에 연결됨`);
+        });
+    }
+
+    function sendMessage() {
+        const userId = parseInt(document.getElementById('userId').value);
+        const roomId = document.getElementById('roomId').value.trim();
+        const content = document.getElementById('messageInput').value.trim();
+
+        if (!roomId || isNaN(userId) || !content) {
+            alert("유저 ID, 채팅방 코드, 메시지를 모두 입력하세요.");
+            return;
+        }
+
+        stompClient.send("/app/chat", {}, JSON.stringify({
+            userId: userId,
+            roomCode: roomId,
+            content: content
+        }));
+
+        document.getElementById('messageInput').value = '';
+    }
+</script>
+</body>
+</html>
