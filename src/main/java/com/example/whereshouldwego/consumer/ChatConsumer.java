@@ -35,9 +35,9 @@ public class ChatConsumer {
                 .createdAt(saved.getCreatedAt())
                 .build();
 
-        System.out.println("Sending to: /topic/chat/" + response.getRoomCode());
+        System.out.println("Sending to: /ws/subscribe/chat/" + response.getRoomCode());
         System.out.println("Payload: " + response.getContent());
 
-        messagingTemplate.convertAndSend("/topic/chat/" + saved.getRoomCode(), response);
+        messagingTemplate.convertAndSend("/ws/subscribe/chat/" + saved.getRoomCode(), response);
     }
 }

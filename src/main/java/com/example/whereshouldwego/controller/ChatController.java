@@ -17,12 +17,12 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    @MessageMapping("/chat")
+    @MessageMapping("/ws/send/chat")
     public void handleChatMessage(ChatMessageRequestDto message) {
         chatService.publishToQueue(message);
     }
 
-    @GetMapping("/history/{roomCode}")
+    @GetMapping("/api/chat/history/{roomCode}")
     public List<ChatMessageResponseDto> getChatHistory(@PathVariable String roomCode) {
         return chatService.getChatHistory(roomCode);
     }

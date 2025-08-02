@@ -33,12 +33,10 @@
             return;
         }
 
-        // 채팅창 초기화
         document.getElementById('chat').value = '';
 
-        // ✅ 이전 채팅 기록 불러오기
         try {
-            const res = await fetch('/history/' + roomId);
+            const res = await fetch('/api/chat/history/' + roomId);
             if (res.ok) {
                 const messages = await res.json();
                 messages.forEach(msg => {
@@ -52,7 +50,6 @@
             console.error("채팅 기록 요청 실패:", e);
         }
 
-        // 기존 연결 해제
         if (stompClient !== null && stompClient.connected) {
             if (subscription) {
                 subscription.unsubscribe();
@@ -72,7 +69,7 @@
         stompClient = Stomp.over(socket);
 
         stompClient.connect({}, function () {
-            subscription = stompClient.subscribe('/topic/chat/' + roomId, function (message) {
+            subscription = stompClient.subscribe('/ws/subscribe/chat/' + roomId, function (message) {
                 const msg = JSON.parse(message.body);
                 const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
                 document.getElementById('chat').value += display;
@@ -92,7 +89,7 @@
             return;
         }
 
-        stompClient.send("/app/chat", {}, JSON.stringify({
+        stompClient.send("/ws/send/chat", {}, JSON.stringify({
             userId: userId,
             roomCode: roomId,
             content: content
