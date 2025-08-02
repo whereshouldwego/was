@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 public class UpdateStartLocationController {
     private final RoomService roomService;
-    @PatchMapping("/start-point/{roomCode}/{userId")
+    @PatchMapping("/start-point/{roomCode}/{userId}")
     public UpdateStartLocationResponse updateStartPoint(@PathVariable("roomCode") String roomCode,
                                                         @PathVariable("userId") Long userId,
                                                         @RequestBody UpdateStartLocationRequest request){
