@@ -1,3 +1,15 @@
+package com.example.whereshouldwego.service;
+
+import com.example.whereshouldwego.dto.request.ChatMessageRequestDto;
+import com.example.whereshouldwego.dto.response.ChatMessageResponseDto;
+import com.example.whereshouldwego.repository.mongo.ChatMessageRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.amqp.rabbit.core.RabbitTemplate;
+import org.springframework.stereotype.Service;
+
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @RequiredArgsConstructor
 public class ChatService {

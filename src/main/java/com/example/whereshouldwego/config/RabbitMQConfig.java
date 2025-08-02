@@ -12,7 +12,6 @@ import org.springframework.context.annotation.Configuration;
 public class RabbitMQConfig {
 
     public static final String CHAT_QUEUE_NAME = "chat.queue";
-    public static final String CURSOR_QUEUE_NAME = "cursor.queue"; // 향후 확장용
 
     @Bean
     public Queue chatQueue() {

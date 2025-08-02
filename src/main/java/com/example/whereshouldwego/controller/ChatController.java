@@ -19,7 +19,7 @@ public class ChatController {
 
     @MessageMapping("/ws/send/chat")
     public void handleChatMessage(ChatMessageRequestDto message) {
-        chatService.publishToQueue(message);
+        chatService.sendChatMessageToQueue(message);
     }
 
     @GetMapping("/api/chat/history/{roomCode}")
