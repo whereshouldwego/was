@@ -3,10 +3,18 @@ server:
 
 spring:
   datasource:
-    url: jdbc:h2:mem:testdb
+    jdbc-url: jdbc:h2:mem:testdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
+
+  secondary-datasource:
+    jdbc-url: ${SECONDARY_DB_URL}
+    username: ${SECONDARY_DB_USERNAME}
+    password: ${SECONDARY_DB_PASSWORD}
+    driver-class-name: org.postgresql.Driver
+
+
     jpa:
       hibernate:
         ddl-auto: update
@@ -14,6 +22,7 @@ spring:
       properties:
         hibernate:
           format_sql: true
+          dialect: org.hibernate.dialect.H2Dialect
       open-in-view: false
 
     thymeleaf:
@@ -23,11 +32,14 @@ spring:
       host: ${REDIS_HOST}
       port: ${REDIS_PORT}
 
-secondary-datasource:
-  url: ${SECONDARY_DB_URL}
-  username: ${SECONDARY_DB_USERNAME}
-  password: ${SECONDARY_DB_PASSWORD}
-  driver-class-name: org.postgresql.Driver
+secondary:
+  jpa:
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.PostgreSQLDialect
 
 logging:
   level:

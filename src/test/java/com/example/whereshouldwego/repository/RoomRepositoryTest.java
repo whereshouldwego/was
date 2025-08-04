@@ -12,7 +12,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
 
 @SpringBootTest
 public class RoomRepositoryTest {
@@ -86,6 +86,12 @@ public class RoomRepositoryTest {
         System.out.println("Room2 Code: " + roomCode2);
 
         assertThat(testRoom.getRoomCode()).isNotEqualTo(testRoom2.getRoomCode());
+    }
+    @Test
+    @DisplayName("존재하지 않는 roomCode로 조회 시 empty 반환")
+    public void testFindInvalidRoomCode(){
+        Optional<Room> foundRoom = roomRepository.findByRoomCode("NotExistingCode");
+        assertThat(foundRoom).isNotPresent();
     }
 
 }

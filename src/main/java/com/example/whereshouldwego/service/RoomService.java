@@ -26,7 +26,7 @@ public class RoomService {
         // 1. 처음 저장 -> 이유: room의 id 생성을 위해
         User user;
 
-        // 회원 비회우너 확인 로직
+        // 회원 비회원 확인 로직
         if (request.getUserId() ==null){
             user = new User();
             user = userRepository.save(user);
