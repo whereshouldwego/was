@@ -1,4 +1,4 @@
-package com.example.whereshouldwego.dto;
+package com.example.whereshouldwego.dto.request;
 
 import lombok.Builder;
 import lombok.Data;

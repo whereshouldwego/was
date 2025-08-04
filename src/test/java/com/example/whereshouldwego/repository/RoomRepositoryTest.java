@@ -18,7 +18,6 @@ import static org.assertj.core.api.Assertions.assertThat;
 public class RoomRepositoryTest {
     @Autowired
     private RoomRepository roomRepository;
-
     @Autowired
     private UserRepository userRepository;
 

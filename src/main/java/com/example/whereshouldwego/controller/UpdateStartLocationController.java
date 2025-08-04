@@ -1,8 +1,7 @@
 package com.example.whereshouldwego.controller;
 
-import com.example.whereshouldwego.domain.Room;
-import com.example.whereshouldwego.dto.UpdateStartLocationRequest;
-import com.example.whereshouldwego.dto.UpdateStartLocationResponse;
+import com.example.whereshouldwego.dto.request.UpdateStartLocationRequest;
+import com.example.whereshouldwego.dto.response.UpdateStartLocationResponse;
 import com.example.whereshouldwego.service.RoomService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.*;

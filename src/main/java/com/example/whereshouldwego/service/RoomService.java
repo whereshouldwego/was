@@ -4,15 +4,19 @@ package com.example.whereshouldwego.service;
 import com.example.whereshouldwego.domain.Room;
 import com.example.whereshouldwego.domain.RoomParticipant;
 import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.dto.*;
+import com.example.whereshouldwego.dto.request.CreateRoomRequest;
+import com.example.whereshouldwego.dto.request.JoinRoomRequest;
+import com.example.whereshouldwego.dto.request.UpdateStartLocationRequest;
+import com.example.whereshouldwego.dto.response.CreateRoomResponse;
+import com.example.whereshouldwego.dto.response.JoinRoomResponse;
+import com.example.whereshouldwego.dto.response.RoomResponse;
+import com.example.whereshouldwego.dto.response.UpdateStartLocationResponse;
 import com.example.whereshouldwego.repository.RoomParticipantRepository;
 import com.example.whereshouldwego.repository.RoomRepository;
 import com.example.whereshouldwego.repository.UserRepository;
 import com.example.whereshouldwego.util.RoomCodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-
-import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor

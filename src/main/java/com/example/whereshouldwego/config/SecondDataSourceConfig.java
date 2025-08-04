@@ -35,7 +35,7 @@ public class SecondDataSourceConfig {
             @Qualifier("secondDataSource") DataSource dataSource ){
         LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
         em.setDataSource(dataSource);
-        em.setPackagesToScan("com.example.whereshouldwego.repository.secondary");
+        em.setPackagesToScan("com.example.whereshouldwego.domain.secondary");
 
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         em.setJpaVendorAdapter(vendorAdapter);
