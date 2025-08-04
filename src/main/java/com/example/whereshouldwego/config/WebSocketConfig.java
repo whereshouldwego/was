@@ -11,17 +11,24 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
-    public void configureMessageBroker(MessageBrokerRegistry config) {
-        // 클라이언트가 구독할 수 있는 주소
-        config.enableSimpleBroker("/ws/subscribe");
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        // Chat
+        registry.enableStompBrokerRelay("/topic", "/queue") // 채팅용
+                .setRelayHost("localhost")
+                .setRelayPort(61613)
+                .setClientLogin("guest")
+                .setClientPasscode("guest")
+                .setSystemLogin("guest")
+                .setSystemPasscode("guest")
+                .setVirtualHost("/");
 
-        // 클라이언트가 서버로 메시지를 보낼 때 사용하는 주소
-        config.setApplicationDestinationPrefixes("/ws/send");
+        // Cursor
+        registry.setApplicationDestinationPrefixes("/ws/send");
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
-        // STOMP 웹소켓 연결 endpoint
+        // STOMP endpoint
         registry.addEndpoint("/ws").withSockJS();
     }
 }

@@ -16,4 +16,14 @@ public class ChatMessageResponseDto {
     private Long userId;
     private String content;
     private LocalDateTime createdAt;
+
+    public static ChatMessageResponseDto fromEntity(ChatMessage chatMessage) {
+        return ChatMessageResponseDto.builder()
+                .id(chatMessage.getId() != null ? chatMessage.getId().toString() : null)
+                .roomCode(chatMessage.getRoomCode())
+                .userId(chatMessage.getUserId())
+                .content(chatMessage.getContent())
+                .createdAt(chatMessage.getCreatedAt())
+                .build();
+    }
 }

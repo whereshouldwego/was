@@ -68,14 +68,14 @@
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
 
-        stompClient.connect({}, function () {
-            subscription = stompClient.subscribe('/ws/subscribe/chat/' + roomId, function (message) {
-                const msg = JSON.parse(message.body);
-                const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
+         stompClient.connect({}, function () {
+                    subscription = stompClient.subscribe('/topic/chat.' + roomId, function (message) {
+                        const msg = JSON.parse(message.body);
+                        const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
                 document.getElementById('chat').value += display;
             });
 
-            console.log(`채팅방 "${roomId}"에 연결됨`);
+            console.log(`채팅방 "/topic/chat/${roomId}"에 연결됨`);
         });
     }
 
@@ -89,7 +89,7 @@
             return;
         }
 
-        stompClient.send("/ws/send/chat", {}, JSON.stringify({
+        stompClient.send(`/ws/send/chat.${roomId}`, {}, JSON.stringify({
             userId: userId,
             roomCode: roomId,
             content: content
