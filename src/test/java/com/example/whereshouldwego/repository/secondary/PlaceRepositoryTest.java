@@ -19,7 +19,7 @@ public class PlaceRepositoryTest {
 
     @Test
     @DisplayName("존재하는 placeId 기반으로 장소 조회하기")
-    public void findExistingRoom(){
+    public void findExistingPlace(){
         Optional<Place> foundPlace = placeRepository.findById(29633L);
         Place place = foundPlace.get();
         assertThat(foundPlace).isPresent();
@@ -27,5 +27,12 @@ public class PlaceRepositoryTest {
         System.out.println(place.getName());
         System.out.println(place.getAddress());
         System.out.println(place.getAiSummary());
+    }
+
+    @Test
+    @DisplayName("존재하지 않는 placeId 기반으로 장소 조회하기")
+    public void findNonExistingPlace(){
+        Optional<Place> place = placeRepository.findById(1L);
+        assertThat(place).isEmpty();
     }
 }
