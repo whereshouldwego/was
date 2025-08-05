@@ -12,6 +12,6 @@ import lombok.NoArgsConstructor;
 public class CursorMessage {
     private Long userId;
     private String roomCode;
-    private double x;
-    private double y;
+    private double lat; // 위도
+    private double lng; // 경도
 }

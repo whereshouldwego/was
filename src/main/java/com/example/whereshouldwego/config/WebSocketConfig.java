@@ -12,8 +12,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        // Chat
-        registry.enableStompBrokerRelay("/topic", "/queue") // 채팅용
+        registry.enableStompBrokerRelay("/topic", "/queue")
                 .setRelayHost("localhost")
                 .setRelayPort(61613)
                 .setClientLogin("guest")
@@ -22,7 +21,6 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
                 .setSystemPasscode("guest")
                 .setVirtualHost("/");
 
-        // Cursor
         registry.setApplicationDestinationPrefixes("/ws/send");
     }
 

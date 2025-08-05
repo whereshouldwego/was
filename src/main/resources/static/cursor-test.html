@@ -20,13 +20,9 @@
 <input type="text" id="roomId" placeholder="Room ID">
 <button onclick="connect()">Connect</button>
 
-<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
-
 <script>
-    let stompClient;
+    let socket;
     let userId, roomCode;
-
     const cursors = {};
 
     function connect() {
@@ -38,12 +34,27 @@
             return;
         }
 
-        const socket = new SockJS('/ws');
-        stompClient = Stomp.over(socket);
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsUrl = `${wsProtocol}://${window.location.host}/ws/cursor?roomCode=${roomCode}`;
+        socket = new WebSocket(wsUrl);
 
-        stompClient.connect({}, () => {
-            stompClient.subscribe(`/ws/subscribe/cursor/${roomCode}`, (msg) => {
-                const data = JSON.parse(msg.body);
+        socket.onopen = () => {
+            console.log("🟢 WebSocket 연결됨");
+
+            document.addEventListener('mousemove', (e) => {
+                const payload = {
+                    userId,
+                    roomCode,
+                    lat: e.clientY, // 나중에 위도 (지도 API 사용)
+                    lng: e.clientX  // 나중에 경도
+                };
+                socket.send(JSON.stringify(payload));
+            });
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
                 if (data.userId === userId) return;
 
                 let cursor = cursors[data.userId];
@@ -53,22 +64,19 @@
                     cursors[data.userId] = cursor;
                     document.body.appendChild(cursor);
                 }
-                cursor.style.left = `${data.x}px`;
-                cursor.style.top = `${data.y}px`;
-            });
 
-            document.addEventListener('mousemove', (e) => {
-                const payload = {
-                    userId: userId,
-                    roomCode: roomCode,
-                    x: e.clientX,
-                    y: e.clientY
-                };
-                stompClient.send("/ws/send/cursor", {}, JSON.stringify(payload));
-            });
-        });
+                // 현재는 clientX/clientY로 보냈기 때문에 lng → x, lat → y로 렌더링
+                cursor.style.left = `${data.lng}px`;
+                cursor.style.top = `${data.lat}px`;
+            } catch (e) {
+                console.error("❌ 메시지 파싱 오류:", event.data);
+            }
+        };
+
+        socket.onclose = () => {
+            console.log("🔴 WebSocket 연결 종료됨");
+        };
     }
-
 </script>
 </body>
 </html>
