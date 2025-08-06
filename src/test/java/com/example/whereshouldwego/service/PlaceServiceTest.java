@@ -1,8 +1,9 @@
-package com.example.whereshouldwego.service.secondary;
+package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.secondary.Place;
 import com.example.whereshouldwego.dto.response.PlaceResponse;
-import com.example.whereshouldwego.repository.secondary.PlaceRepository;
+import com.example.whereshouldwego.repository.PlaceRepository;
+import com.example.whereshouldwego.service.PlaceService;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

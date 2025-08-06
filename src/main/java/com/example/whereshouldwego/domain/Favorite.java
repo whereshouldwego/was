@@ -19,7 +19,8 @@ public class Favorite{
     @JoinColumn(name="user_id", nullable=false)
     private User user;
 
-    @Column(name="place_id", nullable=false)
-    private Long placeId;
+    @ManyToOne
+    @JoinColumn(name="place_id", nullable=false)
+    private Place place;
 
 }

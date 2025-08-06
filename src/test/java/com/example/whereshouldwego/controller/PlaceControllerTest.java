@@ -1,4 +1,4 @@
-package com.example.whereshouldwego.controller.secondary;
+package com.example.whereshouldwego.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.DisplayName;

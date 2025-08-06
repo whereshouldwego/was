@@ -1,9 +1,8 @@
-package com.example.whereshouldwego.service.secondary;
+package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.secondary.Place;
-import com.example.whereshouldwego.dto.request.PlaceRequest;
 import com.example.whereshouldwego.dto.response.PlaceResponse;
-import com.example.whereshouldwego.repository.secondary.PlaceRepository;
+import com.example.whereshouldwego.repository.PlaceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
