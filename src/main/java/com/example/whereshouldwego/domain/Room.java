@@ -8,33 +8,28 @@ import lombok.*;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="rooms")
 @Getter
 @Setter
-@NoArgsConstructor
-@AllArgsConstructor
-@Builder
+@Table(name = "rooms")
 public class Room {
+
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    @Column(name="code", unique=true, nullable = true, length = 6)
+
+    @Column(name = "code", unique = true, length = 6)
     private String roomCode;
-    @Column(name="created_at")
+
+    @Column(nullable = false, updatable = false)
     private LocalDateTime createdAt;
-    @Column(name="expired_at")
     private LocalDateTime expiredAt;
-    @Column(name="url", unique = true)
+
+    @Column(name = "url", unique = true)
     private String roomUrl;
-    @ManyToOne
-    @JoinColumn(name="user_id")
-    private User user;
+
     @PrePersist
     protected void onCreate() {
+
         this.createdAt = LocalDateTime.now();
     }
-
-
-
 }

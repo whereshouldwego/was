@@ -1,4 +1,4 @@
-package com.example.whereshouldwego.domain.secondary;
+package com.example.whereshouldwego.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;

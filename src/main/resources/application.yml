@@ -23,7 +23,6 @@ spring:
   data:
     mongodb:
       uri: mongodb://localhost:27017/chatdb
-
     redis:
       url: redis://localhost:6379
       # 또는 host/port 방식:
@@ -32,6 +31,29 @@ spring:
 
   thymeleaf:
     cache: false
+
+  jwt:
+    secret: ${JWT_SECRET_KEY}
+
+  security:
+    oauth2:
+      client:
+        # 클라이언트 애플리케이션(Spring Boot)에 대한 설정을 포함합니다.
+        registration:
+          kakao:
+            client-id: ${KAKAO_CLIENT_ID}
+            client-secret: ${KAKAO_CLIENT_SECRET}
+            redirect_uri: http://localhost:8080/login/oauth2/code/kakao
+            authorization-grant-type: authorization_code
+            scope: profile_nickname,profile_image, account_email
+            client-name: kakao
+        # OAuth2 인증 제공자(카카오)에 대한 설정 정보를 포함합니다.
+        provider:
+          kakao:
+            authorization-uri: https://kauth.kakao.com/oauth/authorize
+            token-uri: https://kauth.kakao.com/oauth/token
+            user-info-uri: https://kapi.kakao.com/v2/user/me
+            user-name-attribute: id
 
 second:
   datasource:

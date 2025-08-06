@@ -7,20 +7,14 @@ import lombok.Setter;
 @Entity
 @Getter
 @Setter
-@Table(name = "users")
-public class User {
+@Table(name = "refresh_tokens")
+public class Refresh {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(unique = true, nullable = false)
     private String username;
-    private String name;
-
-    private String email;
-    private String image;
-
-    @Column(nullable = false)
-    private String role;
+    private String refresh;
+    private String expiration;
 }

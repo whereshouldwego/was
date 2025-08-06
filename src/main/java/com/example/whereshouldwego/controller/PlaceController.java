@@ -1,7 +1,7 @@
-package com.example.whereshouldwego.controller.secondary;
+package com.example.whereshouldwego.controller;
 
 import com.example.whereshouldwego.dto.response.PlaceResponse;
-import com.example.whereshouldwego.service.secondary.PlaceService;
+import com.example.whereshouldwego.service.PlaceService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;

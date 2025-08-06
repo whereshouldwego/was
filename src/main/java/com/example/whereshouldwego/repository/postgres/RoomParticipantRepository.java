@@ -1,4 +1,4 @@
-package com.example.whereshouldwego.repository;
+package com.example.whereshouldwego.repository.postgres;
 
 import com.example.whereshouldwego.domain.Room;
 import com.example.whereshouldwego.domain.RoomParticipant;
@@ -12,4 +12,6 @@ import java.util.Optional;
 public interface RoomParticipantRepository extends JpaRepository<RoomParticipant, Long> {
 
     Optional<RoomParticipant> findByRoomIdAndUserId(User user, Room room);
+    Boolean existsByRoomAndNickname(Room room, String nickname);
+    Optional<RoomParticipant> existsByRoomAndUsername(Room room, String username);
 }
