@@ -2,6 +2,8 @@ package com.example.whereshouldwego.repository;
 
 import com.example.whereshouldwego.domain.Room;
 import com.example.whereshouldwego.domain.User;
+import com.example.whereshouldwego.repository.postgres.RoomRepository;
+import com.example.whereshouldwego.repository.postgres.UserRepository;
 import com.example.whereshouldwego.util.RoomCodeUtil;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;

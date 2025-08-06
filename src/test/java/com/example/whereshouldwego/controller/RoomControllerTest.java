@@ -1,7 +1,7 @@
 package com.example.whereshouldwego.controller;
 
 import com.example.whereshouldwego.domain.Room;
-import com.example.whereshouldwego.repository.RoomRepository;
+import com.example.whereshouldwego.repository.postgres.RoomRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

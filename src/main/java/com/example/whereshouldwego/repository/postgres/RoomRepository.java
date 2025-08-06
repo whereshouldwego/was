@@ -1,4 +1,4 @@
-package com.example.whereshouldwego.repository;
+package com.example.whereshouldwego.repository.postgres;
 
 import com.example.whereshouldwego.domain.Room;
 import org.springframework.data.jpa.repository.JpaRepository;
