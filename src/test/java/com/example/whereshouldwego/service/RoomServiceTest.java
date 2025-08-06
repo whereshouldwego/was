@@ -2,9 +2,8 @@ package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.Room;
 import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.repository.RoomParticipantRepository;
-import com.example.whereshouldwego.repository.RoomRepository;
-import com.example.whereshouldwego.repository.UserRepository;
+import com.example.whereshouldwego.repository.postgres.RoomParticipantRepository;
+import com.example.whereshouldwego.repository.postgres.RoomRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;

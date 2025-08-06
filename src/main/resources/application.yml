@@ -3,13 +3,13 @@ server:
 
 spring:
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:.env
 
   datasource:
-    jdbc-url: jdbc:h2:mem:testdb
-    driver-class-name: org.h2.Driver
-    username: sa
-    password:
+    url: ${POSTGRESQL_HOST}
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+    driver-class-name: org.postgresql.Driver
 
   jpa:
     hibernate:
@@ -18,7 +18,7 @@ spring:
     properties:
       hibernate:
         format_sql: true
-        dialect: org.hibernate.dialect.H2Dialect
+        dialect: org.hibernate.dialect.PostgreSQLDialect
     open-in-view: false
 
   data:
@@ -34,23 +34,7 @@ spring:
     cache: false
 
   jwt:
-    secret: {JWT_SECRET_KEY}
-
-second:
-  datasource:
-    jdbc-url: ${SECONDARY_DB_URL}
-    username: ${SECONDARY_DB_USERNAME}
-    password: ${SECONDARY_DB_PASSWORD}
-    driver-class-name: org.postgresql.Driver
-
-secondary:
-  jpa:
-    hibernate:
-      ddl-auto: update
-    properties:
-      hibernate:
-        format_sql: true
-        dialect: org.hibernate.dialect.PostgreSQLDialect
+    secret: ${JWT_SECRET_KEY}
 
 logging:
   level:

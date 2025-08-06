@@ -8,8 +8,7 @@ import org.springframework.data.jpa.repository.config.EnableJpaAuditing;
 
 @SpringBootApplication
 @EnableJpaAuditing
-@EnableJpaRepositories(basePackages = "com.example.whereshouldwego.repository.jpa")
-@EnableMongoRepositories(basePackages = "com.example.whereshouldwego.repository.mongo")
+@EnableJpaRepositories(basePackages = "com.example.whereshouldwego.repository.postgres")
 public class WhereShouldWeGoApplication {
 
 	public static void main(String[] args) {

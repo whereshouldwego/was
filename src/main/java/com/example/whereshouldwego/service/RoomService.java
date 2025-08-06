@@ -11,9 +11,9 @@ import com.example.whereshouldwego.dto.response.CreateRoomResponse;
 import com.example.whereshouldwego.dto.response.JoinRoomResponse;
 import com.example.whereshouldwego.dto.response.RoomResponse;
 import com.example.whereshouldwego.dto.response.UpdateStartLocationResponse;
-import com.example.whereshouldwego.repository.RoomParticipantRepository;
-import com.example.whereshouldwego.repository.RoomRepository;
-import com.example.whereshouldwego.repository.UserRepository;
+import com.example.whereshouldwego.repository.postgres.RoomParticipantRepository;
+import com.example.whereshouldwego.repository.postgres.RoomRepository;
+import com.example.whereshouldwego.repository.postgres.UserRepository;
 import com.example.whereshouldwego.util.RoomCodeUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -92,7 +92,7 @@ public class RoomService {
         roomParticipantRepository.save(roomParticipant);
 
         return JoinRoomResponse.builder()
-                .userId(user.getId())
+                .userId((long) user.getId())
                 .roomCode(room.getRoomCode())
                 .build();
     }
@@ -110,7 +110,7 @@ public class RoomService {
         roomParticipantRepository.save(roomParticipant);
 
         return UpdateStartLocationResponse.builder()
-                .userId(user.getId())
+                .userId((long) user.getId())
                 .roomCode(room.getRoomCode())
                 .startLocation(request.getStartLocation()).build();
     }
