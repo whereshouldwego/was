@@ -12,6 +12,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import java.time.LocalDateTime;
 import java.util.Date;
 
 @RestController
@@ -92,12 +93,12 @@ public class ReissueController {
 
         Date date = new Date(System.currentTimeMillis() + expiredMs);
 
-        Refresh refreshEntity = new Refresh();
-        refreshEntity.setUsername(username);
-        refreshEntity.setRefresh(refresh);
-        refreshEntity.setExpiration(date.toString());
-
-        refreshRepository.save(refreshEntity);
+        Refresh savedRefresh = Refresh.builder()
+                .username(username)
+                .refresh(refresh)
+                .expiration(LocalDateTime.now().plusSeconds(1209600000L / 1000))
+                .build();
+        refreshRepository.save(savedRefresh);
     }
 
     private Cookie createCookie(String key, String value) {

@@ -1,11 +1,12 @@
 package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.dto.CustomUserDetails;
+import com.example.whereshouldwego.dto.CustomOAuth2User;
 import com.example.whereshouldwego.dto.UserDTO;
 import com.example.whereshouldwego.dto.response.KakaoResponse;
 import com.example.whereshouldwego.dto.response.OAuth2Response;
 import com.example.whereshouldwego.repository.postgres.UserRepository;
+import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
 import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
@@ -15,14 +16,10 @@ import org.springframework.stereotype.Service;
 import java.util.Optional;
 
 @Service
+@RequiredArgsConstructor
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-
-    public CustomOAuth2UserService(UserRepository userRepository) {
-
-        this.userRepository = userRepository;
-    }
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -31,6 +28,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         String registrationId = userRequest.getClientRegistration().getRegistrationId();
         OAuth2Response oAuth2Response = null;
+
         if (registrationId.equals("kakao")) {
 
             oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
@@ -46,13 +44,13 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
         if (existUser.isEmpty()) {
 
-            User user = new User();
-            user.setUsername(username);
-            user.setName(oAuth2Response.getName());
-            user.setEmail(oAuth2Response.getEmail());
-            user.setImage(oAuth2Response.getImage());
-            user.setRole("ROLE_USER");
-
+            User user = User.builder()
+                    .username(username)
+                    .role("ROLE_USER")
+                    .name(oAuth2Response.getName())
+                    .email(oAuth2Response.getEmail())
+                    .image(oAuth2Response.getImage())
+                    .build();
             userRepository.save(user);
 
             UserDTO userDTO = new UserDTO();
@@ -60,24 +58,25 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             userDTO.setName(oAuth2Response.getName());
             userDTO.setRole("ROLE_USER");
 
-            return new CustomUserDetails(userDTO);
+            return new CustomOAuth2User(userDTO);
         }
         else {
 
             User user = existUser.get();
 
-            user.setName(oAuth2Response.getName());
-            user.setEmail(oAuth2Response.getEmail());
-            user.setImage(oAuth2Response.getImage());
-
-            userRepository.save(user);
+            User updatedUser = user.toBuilder()
+                    .name(oAuth2Response.getName())
+                    .email(oAuth2Response.getEmail())
+                    .image(oAuth2Response.getImage())
+                    .build();
+            userRepository.save(updatedUser);
 
             UserDTO userDTO = new UserDTO();
-            userDTO.setUsername(user.getUsername());
+            userDTO.setUsername(updatedUser.getUsername());
             userDTO.setName(oAuth2Response.getName());
-            userDTO.setRole(user.getRole());
+            userDTO.setRole(updatedUser.getRole());
 
-            return new CustomUserDetails(userDTO);
+            return new CustomOAuth2User(userDTO);
         }
     }
 }

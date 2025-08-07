@@ -1,6 +1,6 @@
 package com.example.whereshouldwego.jwt;
 
-import com.example.whereshouldwego.dto.CustomUserDetails;
+import com.example.whereshouldwego.dto.CustomOAuth2User;
 import com.example.whereshouldwego.dto.UserDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
@@ -79,10 +79,10 @@ public class JWTFilter extends OncePerRequestFilter {
         userDTO.setRole(role);
 
         //UserDetails에 회원 정보 객체 담기
-        CustomUserDetails customUserDetails = new CustomUserDetails(userDTO);
+        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
 
         //스프링 시큐리티 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
+        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
         //세션에 사용자 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
 

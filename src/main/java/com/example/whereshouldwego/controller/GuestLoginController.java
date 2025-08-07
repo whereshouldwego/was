@@ -18,7 +18,7 @@ public class GuestLoginController {
 
     private final GuestLoginService guestLoginService;
 
-    @PostMapping("/api/login/guest")
+    @PostMapping("/api/auth/guest")
     public ResponseEntity<LoginSuccessResponse> loginProcess(
             @CookieValue(value = "refresh", required = false) String refresh,
             @RequestParam String roomCode,

@@ -1,12 +1,18 @@
 package com.example.whereshouldwego.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "refresh_tokens")
 public class Refresh {
 
@@ -16,5 +22,5 @@ public class Refresh {
 
     private String username;
     private String refresh;
-    private String expiration;
+    private LocalDateTime expiration;
 }

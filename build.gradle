@@ -37,12 +37,9 @@ dependencies {
 	// Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
-<<<<<<< HEAD
 	//OAuth2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
 
-=======
->>>>>>> 97caefa536e2cb6efd9091f85add6bc1a36da080
 	// JWT
 	implementation 'io.jsonwebtoken:jjwt-api:0.12.6'
 	implementation 'io.jsonwebtoken:jjwt-impl:0.12.6'

@@ -41,16 +41,13 @@ spring:
   security:
     oauth2:
       client:
-        # 클라이언트 애플리케이션(Spring Boot)에 대한 설정을 포함합니다.
         registration:
           kakao:
-            client-id: ${KAKAO_CLIENT_ID}
-            client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect_uri: http://localhost:8080/login/oauth2/code/kakao
+            client-id:
+            client-secret:
+            redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
             authorization-grant-type: authorization_code
-            scope: profile_nickname,profile_image, account_email
-            client-name: kakao
-        # OAuth2 인증 제공자(카카오)에 대한 설정 정보를 포함합니다.
+            scope: profile_nickname, profile_image, account_email
         provider:
           kakao:
             authorization-uri: https://kauth.kakao.com/oauth/authorize
@@ -61,3 +58,5 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+    org.springframework.security.oauth2.client: DEBUG
+    org.springframework.security.oauth2.core: DEBUG

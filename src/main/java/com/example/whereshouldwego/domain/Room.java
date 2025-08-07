@@ -1,16 +1,22 @@
 package com.example.whereshouldwego.domain;
 
-
-import com.example.whereshouldwego.util.RoomCodeUtil;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
-@Setter
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "rooms")
+@EntityListeners(AuditingEntityListener.class)
 public class Room {
 
     @Id
@@ -20,16 +26,11 @@ public class Room {
     @Column(name = "code", unique = true, length = 6)
     private String roomCode;
 
-    @Column(nullable = false, updatable = false)
+    @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
     private LocalDateTime expiredAt;
 
     @Column(name = "url", unique = true)
     private String roomUrl;
-
-    @PrePersist
-    protected void onCreate() {
-
-        this.createdAt = LocalDateTime.now();
-    }
 }

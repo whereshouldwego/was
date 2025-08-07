@@ -2,12 +2,15 @@ package com.example.whereshouldwego.domain;
 
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
-import lombok.Setter;
+import lombok.NoArgsConstructor;
 
 @Entity
-@Setter
 @Getter
+@Builder(toBuilder = true)
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "users")
 public class User {
 
@@ -17,11 +20,11 @@ public class User {
 
     @Column(unique = true, nullable = false)
     private String username;
-    private String name;
-
-    private String email;
-    private String image;
 
     @Column(nullable = false)
     private String role;
+
+    private String name;
+    private String email;
+    private String image;
 }

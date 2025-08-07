@@ -4,17 +4,15 @@ package com.example.whereshouldwego.service;
 import com.example.whereshouldwego.domain.Room;
 import com.example.whereshouldwego.domain.RoomParticipant;
 import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.dto.request.CreateRoomRequest;
-import com.example.whereshouldwego.dto.request.JoinRoomRequest;
 import com.example.whereshouldwego.dto.request.UpdateStartLocationRequest;
 import com.example.whereshouldwego.dto.response.CreateRoomResponse;
-import com.example.whereshouldwego.dto.response.JoinRoomResponse;
 import com.example.whereshouldwego.dto.response.RoomResponse;
 import com.example.whereshouldwego.dto.response.UpdateStartLocationResponse;
 import com.example.whereshouldwego.repository.postgres.RoomParticipantRepository;
 import com.example.whereshouldwego.repository.postgres.RoomRepository;
 import com.example.whereshouldwego.repository.postgres.UserRepository;
 import com.example.whereshouldwego.util.RoomCodeUtil;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -26,38 +24,33 @@ public class RoomService {
     private final RoomParticipantRepository roomParticipantRepository;
     private final String BASE_URL = "https://localhost:8000/";
 
-    public CreateRoomResponse createRoom(CreateRoomRequest request) {
-        // 1. 처음 저장 -> 이유: room의 id 생성을 위해
-//        User user;
+    public CreateRoomResponse createRoom() {
 
-        // 회원 비회원 확인 로직
-//        if (request.getUserId() ==null){
-//            user = new User();
-//            user = userRepository.save(user);
-//        } else {
-//            user = userRepository.findById(request.getUserId())
-//                    .orElseThrow(() -> new IllegalArgumentException("User Not Found"));
-//        }
-
-        Room room = new Room();
-//        room.setUser(user);
+        // 1. 초기 Room 엔티티 생성 및 저장
+        Room room = Room.builder().build();
         Room saved = roomRepository.save(room);
 
+        // 2. 저장된 엔티티의 ID를 사용하여 고유한 코드 생성
         String roomCode = RoomCodeUtil.encode(saved.getId());
 
-        //3. URL 생성
+        // 3. URL 생성
         String roomUrl = BASE_URL + roomCode;
 
-        //4. 엔티티에 다시 set 후 저장
-        saved.setRoomCode(roomCode);
-        saved.setRoomUrl(roomUrl);
-        roomRepository.save(saved);
+        // 4. 기존 엔티티를 toBuilder()로 복사하고, roomCode와 roomUrl 필드를 업데이트
+        Room updatedRoom = saved.toBuilder()
+                .roomCode(roomCode)
+                .roomUrl(roomUrl)
+                .build();
+
+        // 5. 업데이트된 엔티티를 저장 (JPA가 변경을 감지하여 업데이트)
+        roomRepository.save(updatedRoom);
 
         return CreateRoomResponse.builder()
-                .roomCode(saved.getRoomCode())
-                .roomUrl(saved.getRoomUrl())
+                .roomCode(updatedRoom.getRoomCode())
+                .roomUrl(updatedRoom.getRoomUrl())
                 .build();
     }
+
     public RoomResponse getRoomByCode(String roomCode){
         Room room = roomRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
@@ -69,33 +62,8 @@ public class RoomService {
                 .expiredAt(room.getExpiredAt())
                 .build();
     }
-//    public JoinRoomResponse joinRoom(JoinRoomRequest request, String roomCode){
-//        User user;
-//
-//        // 방 참여자가 회원인지 비회원인지 확인하는 로직
-//        if (request.getUserId() ==null){
-//            user = new User();
-//            user = userRepository.save(user);
-//        } else {
-//            user = userRepository.findById(request.getUserId())
-//                    .orElseThrow(() -> new IllegalArgumentException("User Not Found"));
-//        }
-//        // 방이 존재하는지 확인하는 로직
-//        Room room = roomRepository.findByRoomCode(roomCode)
-//                .orElseThrow(() -> new IllegalArgumentException("Room Not Found"));
-//
-//        // 방 참여자를 생성하는 로직
-//        RoomParticipant roomParticipant = RoomParticipant.builder()
-//                .user(user)
-//                .room(room)
-//                .build();
-//        roomParticipantRepository.save(roomParticipant);
-//
-//        return JoinRoomResponse.builder()
-//                .userId(user.getId())
-//                .roomCode(room.getRoomCode())
-//                .build();
-//    }
+
+    @Transactional
     public UpdateStartLocationResponse updateLocation(UpdateStartLocationRequest request, String roomCode, Long userId){
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
@@ -103,15 +71,19 @@ public class RoomService {
         Room room = roomRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new IllegalArgumentException("Room not found"));
 
-        RoomParticipant roomParticipant = roomParticipantRepository.findByRoomIdAndUserId(user,room)
+        RoomParticipant roomParticipant = roomParticipantRepository.findByRoomAndUser(room, user)
                 .orElseThrow(() -> new IllegalArgumentException("Participant not found"));
 
-        roomParticipant.setStartLocation(request.getStartLocation());
-        roomParticipantRepository.save(roomParticipant);
+        // toBuilder()를 사용하여 startLocation만 변경된 새로운 객체 생성
+        RoomParticipant updatedParticipant = roomParticipant.toBuilder()
+                .startLocation(request.getStartLocation())
+                .build();
+
+        roomParticipantRepository.save(updatedParticipant);
 
         return UpdateStartLocationResponse.builder()
-                .userId((long) user.getId())
-                .roomCode(room.getRoomCode())
-                .startLocation(request.getStartLocation()).build();
+                .userId(updatedParticipant.getUser().getId()) // 업데이트된 객체에서 정보 가져옴
+                .roomCode(updatedParticipant.getRoom().getRoomCode())
+                .startLocation(updatedParticipant.getStartLocation()).build();
     }
 }

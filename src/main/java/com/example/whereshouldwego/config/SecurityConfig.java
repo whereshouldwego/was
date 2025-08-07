@@ -5,6 +5,7 @@ import com.example.whereshouldwego.jwt.JWTUtil;
 import com.example.whereshouldwego.oauth2.CustomSuccessHandler;
 import com.example.whereshouldwego.service.CustomOAuth2UserService;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,18 +20,12 @@ import java.util.Collections;
 
 @Configuration
 @EnableWebSecurity
+@RequiredArgsConstructor
 public class SecurityConfig {
 
     private final CustomOAuth2UserService customOAuth2UserService;
     private final CustomSuccessHandler customSuccessHandler;
     private final JWTUtil jwtUtil;
-
-    public SecurityConfig(CustomOAuth2UserService customOAuth2UserService, CustomSuccessHandler customSuccessHandler, JWTUtil jwtUtil) {
-
-        this.customOAuth2UserService = customOAuth2UserService;
-        this. customSuccessHandler = customSuccessHandler;
-        this.jwtUtil = jwtUtil;
-    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -61,7 +56,7 @@ public class SecurityConfig {
         http
                 .csrf((auth) -> auth.disable());
 
-        // Form 로그인 방식 disable
+        // form 로그인 방식 disable
         http
                 .formLogin((auth) -> auth.disable());
 
@@ -84,8 +79,8 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
-                        .requestMatchers("/api/guests", "/api/auth/guest").permitAll()
-                        .anyRequest().permitAll());
+                        .requestMatchers("/api/auth/guest").permitAll()
+                        .anyRequest().authenticated());
 
         // 세션 설정 STATELESS
         http

@@ -1,9 +1,6 @@
 package com.example.whereshouldwego.controller;
 
-import com.example.whereshouldwego.dto.request.CreateRoomRequest;
-import com.example.whereshouldwego.dto.request.JoinRoomRequest;
 import com.example.whereshouldwego.dto.response.CreateRoomResponse;
-import com.example.whereshouldwego.dto.response.JoinRoomResponse;
 import com.example.whereshouldwego.dto.response.RoomResponse;
 import com.example.whereshouldwego.service.RoomService;
 import lombok.RequiredArgsConstructor;
@@ -20,17 +17,10 @@ public class RoomController {
     // 약속 방 생성
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public CreateRoomResponse post(@RequestBody CreateRoomRequest request){
+    public CreateRoomResponse post(){
 
-        return roomService.createRoom(request);
+        return roomService.createRoom();
     }
-
-    //약속방 참여 (request body: userId, response : userId, roomCode, url
-//    @PostMapping("/{roomCode}")
-//    public JoinRoomResponse post(@PathVariable("roomCode") String roomCode, @RequestBody JoinRoomRequest request){
-//
-//        return roomService.joinRoom(request, roomCode);
-//    }
 
     // 약속방 url 조회
     @GetMapping("/{roomCode}")
