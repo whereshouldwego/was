@@ -1,7 +1,7 @@
 package com.example.whereshouldwego.repository;
 
 import com.example.whereshouldwego.domain.secondary.Place;
-import com.example.whereshouldwego.repository.PlaceRepository;
+import com.example.whereshouldwego.repository.postgres.PlaceRepository;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
