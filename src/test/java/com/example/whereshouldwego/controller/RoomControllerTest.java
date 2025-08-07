@@ -40,7 +40,6 @@ public class RoomControllerTest {
     void createRoomTest() throws Exception {
         Room room = new Room();
 
-
         ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(room);
 

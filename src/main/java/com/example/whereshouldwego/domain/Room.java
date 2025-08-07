@@ -1,40 +1,36 @@
 package com.example.whereshouldwego.domain;
 
-
-import com.example.whereshouldwego.util.RoomCodeUtil;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import java.time.LocalDateTime;
 
 @Entity
-@Table(name="rooms")
 @Getter
-@Setter
+@Builder(toBuilder = true)
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
+@Table(name = "rooms")
+@EntityListeners(AuditingEntityListener.class)
 public class Room {
+
     @Id
     @GeneratedValue(strategy= GenerationType.IDENTITY)
     private Long id;
-    private String name;
-    @Column(name="code", unique=true, nullable = true, length = 6)
+
+    @Column(name = "code", unique = true, length = 6)
     private String roomCode;
-    @Column(name="created_at")
+
+    @CreatedDate
+    @Column(updatable = false)
     private LocalDateTime createdAt;
-    @Column(name="expired_at")
     private LocalDateTime expiredAt;
-    @Column(name="url", unique = true)
+
+    @Column(name = "url", unique = true)
     private String roomUrl;
-    @ManyToOne
-    @JoinColumn(name="user_id")
-    private User user;
-    @PrePersist
-    protected void onCreate() {
-        this.createdAt = LocalDateTime.now();
-    }
-
-
-
 }

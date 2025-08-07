@@ -1,11 +1,15 @@
 package com.example.whereshouldwego.jwt;
 
-import com.example.whereshouldwego.domain.User;
+import com.example.whereshouldwego.dto.CustomOAuth2User;
+import com.example.whereshouldwego.dto.UserDTO;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
@@ -70,13 +74,17 @@ public class JWTFilter extends OncePerRequestFilter {
         String username = jwtUtil.getUsername(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
-        User user = new User();
-        user.setUsername(username);
-        user.setRole(role);
-        //CustomUserDetails customUserDetails = new CustomUserDetails(userEntity);
+        UserDTO userDTO = new UserDTO();
+        userDTO.setUsername(username);
+        userDTO.setRole(role);
 
-        //Authentication authToken = new UsernamePasswordAuthenticationToken(customUserDetails, null, customUserDetails.getAuthorities());
-        //SecurityContextHolder.getContext().setAuthentication(authToken);
+        //UserDetails에 회원 정보 객체 담기
+        CustomOAuth2User customOAuth2User = new CustomOAuth2User(userDTO);
+
+        //스프링 시큐리티 인증 토큰 생성
+        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+        //세션에 사용자 등록
+        SecurityContextHolder.getContext().setAuthentication(authToken);
 
         filterChain.doFilter(request, response);
     }
