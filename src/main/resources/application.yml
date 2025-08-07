@@ -55,6 +55,15 @@ spring:
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
 
+  rabbitmq:
+    host: ${RABBITMQ_HOST}
+    client:
+      login: ${RABBITMQ_CLIENT_LOGIN}
+      passcode: ${RABBITMQ_CLIENT_PASSCODE}
+    server:
+      login: ${RABBITMQ_SERVER_LOGIN}
+      passcode: ${RABBITMQ_SERVER_PASSCODE}
+
 logging:
   level:
     org.hibernate.SQL: debug

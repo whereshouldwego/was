@@ -1,5 +1,6 @@
 package com.example.whereshouldwego.config;
 
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -10,15 +11,30 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    @Value("${rabbitmq.host}")
+    private String rabbitmqHost;
+
+    @Value("${rabbitmq.client.login}")
+    private String rabbitmqClientLogin;
+
+    @Value("${rabbitmq.client.passcode}")
+    private String rabbitmqClientPasscode;
+
+    @Value("${rabbitmq.server.login}")
+    private String rabbitmqServerLogin;
+
+    @Value("${rabbitmq.server.passcode}")
+    private String rabbitmqServerPasscode;
+
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
         registry.enableStompBrokerRelay("/topic", "/queue")
-                .setRelayHost("localhost")
-                .setRelayPort(61613)
-                .setClientLogin("guest")
-                .setClientPasscode("guest")
-                .setSystemLogin("guest")
-                .setSystemPasscode("guest")
+                .setRelayHost(rabbitmqHost)
+                .setRelayPort(61613) // 포트 번호는 일반적으로 고정됩니다.
+                .setClientLogin(rabbitmqClientLogin)
+                .setClientPasscode(rabbitmqClientPasscode)
+                .setSystemLogin(rabbitmqServerLogin)
+                .setSystemPasscode(rabbitmqServerPasscode)
                 .setVirtualHost("/");
 
         registry.setApplicationDestinationPrefixes("/ws/send");
