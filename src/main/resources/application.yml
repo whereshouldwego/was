@@ -6,7 +6,6 @@ spring:
     import: optional:file:.env
 
   datasource:
-
     url: ${POSTGRESQL_HOST}
     username: ${POSTGRESQL_USERNAME}
     password: ${POSTGRESQL_PASSWORD}
@@ -25,12 +24,9 @@ spring:
 
   data:
     mongodb:
-      uri: mongodb://localhost:27017/chatdb
+      uri: mongodb://mongodb:27017/chatdb
     redis:
-      url: redis://localhost:6379
-      # 또는 host/port 방식:
-      # host: localhost
-      # port: 6379
+      url: redis://redis:6379
 
   thymeleaf:
     cache: false
