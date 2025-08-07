@@ -2,7 +2,7 @@ package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.Favorite;
 import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.domain.secondary.Place;
+import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.dto.request.CreateFavoriteRequest;
 import com.example.whereshouldwego.dto.response.CreateFavoriteResponse;
 import com.example.whereshouldwego.repository.postgres.FavoriteRepository;

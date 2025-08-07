@@ -1,16 +1,21 @@
 package com.example.whereshouldwego.domain;
 
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Data
-@Table(name="users")
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
+@Setter
+@Getter
+@Table(name = "users")
 public class User {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    private String username;
+
+    private String role;
 }

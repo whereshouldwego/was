@@ -2,7 +2,7 @@ package com.example.whereshouldwego.controller;
 
 import com.example.whereshouldwego.domain.Favorite;
 import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.domain.secondary.Place;
+import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.dto.request.CreateFavoriteRequest;
 import com.example.whereshouldwego.repository.postgres.FavoriteRepository;
 import com.example.whereshouldwego.repository.postgres.PlaceRepository;
@@ -15,6 +15,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 
@@ -26,6 +27,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc(addFilters = false)
 @SpringBootTest
+@ActiveProfiles("test")
 public class FavoriteControllerTest {
     @Autowired
     private MockMvc mockMvc;
@@ -44,8 +46,10 @@ public class FavoriteControllerTest {
     public void setUp(){
         favoriteRepository.deleteAll();
         userRepository.deleteAll();
-
-        user = userRepository.save(User.builder().build());
+        user = new User();
+        user.setUsername("testUser");
+        user.setRole("USER");
+        user = userRepository.save(user);
         place = placeRepository.findById(29633L)
                 .orElseThrow(() -> new IllegalArgumentException("해당 장소가 존재하지 않습니다."));
 

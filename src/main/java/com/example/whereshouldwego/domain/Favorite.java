@@ -1,6 +1,6 @@
 package com.example.whereshouldwego.domain;
 
-import com.example.whereshouldwego.domain.secondary.Place;
+import com.example.whereshouldwego.domain.Place;
 import jakarta.persistence.*;
 import lombok.*;
 

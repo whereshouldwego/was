@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>커서 공유 테스트</title>
+    <style>
+        .cursor {
+            position: absolute;
+            width: 10px;
+            height: 10px;
+            background: red;
+            border-radius: 50%;
+            pointer-events: none;
+        }
+    </style>
+</head>
+<body>
+<h2>실시간 커서 공유</h2>
+<input type="text" id="userId" placeholder="User ID">
+<input type="text" id="roomId" placeholder="Room ID">
+<button onclick="connect()">Connect</button>
+
+<script>
+    let socket;
+    let userId, roomCode;
+    const cursors = {};
+
+    function connect() {
+        userId = parseInt(document.getElementById('userId').value.trim());
+        roomCode = document.getElementById('roomId').value.trim();
+
+        if (isNaN(userId) || !roomCode) {
+            alert("숫자 User ID와 Room ID를 입력하세요.");
+            return;
+        }
+
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        const wsUrl = `${wsProtocol}://${window.location.host}/ws/cursor?roomCode=${roomCode}`;
+        socket = new WebSocket(wsUrl);
+
+        socket.onopen = () => {
+            console.log("🟢 WebSocket 연결됨");
+
+            document.addEventListener('mousemove', (e) => {
+                const payload = {
+                    userId,
+                    roomCode,
+                    lat: e.clientY, // 나중에 위도 (지도 API 사용)
+                    lng: e.clientX  // 나중에 경도
+                };
+                socket.send(JSON.stringify(payload));
+            });
+        };
+
+        socket.onmessage = (event) => {
+            try {
+                const data = JSON.parse(event.data);
+                if (data.userId === userId) return;
+
+                let cursor = cursors[data.userId];
+                if (!cursor) {
+                    cursor = document.createElement('div');
+                    cursor.className = 'cursor';
+                    cursors[data.userId] = cursor;
+                    document.body.appendChild(cursor);
+                }
+
+                // 현재는 clientX/clientY로 보냈기 때문에 lng → x, lat → y로 렌더링
+                cursor.style.left = `${data.lng}px`;
+                cursor.style.top = `${data.lat}px`;
+            } catch (e) {
+                console.error("❌ 메시지 파싱 오류:", event.data);
+            }
+        };
+
+        socket.onclose = () => {
+            console.log("🔴 WebSocket 연결 종료됨");
+        };
+    }
+</script>
+</body>
+</html>

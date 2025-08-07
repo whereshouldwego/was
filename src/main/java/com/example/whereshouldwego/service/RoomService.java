@@ -24,7 +24,7 @@ public class RoomService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final RoomParticipantRepository roomParticipantRepository;
-    private final String BASE_URL = "https://localhost:8080/";
+    private final String BASE_URL = "https://localhost:8000/";
 
     public CreateRoomResponse createRoom(CreateRoomRequest request) {
         // 1. 처음 저장 -> 이유: room의 id 생성을 위해
@@ -92,7 +92,7 @@ public class RoomService {
         roomParticipantRepository.save(roomParticipant);
 
         return JoinRoomResponse.builder()
-                .userId(user.getId())
+                .userId((long) user.getId())
                 .roomCode(room.getRoomCode())
                 .build();
     }
@@ -110,7 +110,7 @@ public class RoomService {
         roomParticipantRepository.save(roomParticipant);
 
         return UpdateStartLocationResponse.builder()
-                .userId(user.getId())
+                .userId((long) user.getId())
                 .roomCode(room.getRoomCode())
                 .startLocation(request.getStartLocation()).build();
     }

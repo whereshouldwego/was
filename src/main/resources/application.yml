@@ -1,13 +1,16 @@
 server:
-  port: 8080
+  port: 8000
 
 spring:
   config:
-    import: optional:file:.env[.properties]
+    import: optional:file:.env
+
   datasource:
-    url: ${SECONDARY_DB_URL}
-    username: ${SECONDARY_DB_USERNAME}
-    password: ${SECONDARY_DB_PASSWORD}
+
+    url: ${POSTGRESQL_HOST}
+    username: ${POSTGRESQL_USERNAME}
+    password: ${POSTGRESQL_PASSWORD}
+
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -17,11 +20,12 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+    open-in-view: false
+
 
   data:
     mongodb:
       uri: mongodb://localhost:27017/chatdb
-
     redis:
       url: redis://localhost:6379
       # 또는 host/port 방식:
@@ -30,6 +34,9 @@ spring:
 
   thymeleaf:
     cache: false
+
+  jwt:
+    secret: ${JWT_SECRET_KEY}
 
 logging:
   level:

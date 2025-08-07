@@ -9,6 +9,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.*;
+import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 
@@ -21,6 +22,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 @AutoConfigureMockMvc(addFilters=false) // 시큐리티 필터 제거
 @SpringBootTest
+@ActiveProfiles("test")
 public class RoomControllerTest {
 
     @Autowired
@@ -37,7 +39,7 @@ public class RoomControllerTest {
     @Test
     void createRoomTest() throws Exception {
         Room room = new Room();
-        room.setName("Test Room");
+
 
         ObjectMapper objectMapper = new ObjectMapper();
         String requestBody = objectMapper.writeValueAsString(room);
@@ -48,7 +50,7 @@ public class RoomControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(requestBody))
                 .andDo(print())
-                .andExpect(status().isOk());
+                .andExpect(status().isCreated());
 
 
     }

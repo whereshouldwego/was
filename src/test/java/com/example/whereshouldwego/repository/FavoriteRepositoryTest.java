@@ -2,7 +2,7 @@ package com.example.whereshouldwego.repository;
 
 import com.example.whereshouldwego.domain.Favorite;
 import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.domain.secondary.Place;
+import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.repository.postgres.FavoriteRepository;
 import com.example.whereshouldwego.repository.postgres.PlaceRepository;
 import com.example.whereshouldwego.repository.postgres.UserRepository;
@@ -11,12 +11,14 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.test.context.ActiveProfiles;
 
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 
 @SpringBootTest
+@ActiveProfiles("test")
 public class FavoriteRepositoryTest {
     @Autowired
     private UserRepository userRepository;
@@ -30,8 +32,9 @@ public class FavoriteRepositoryTest {
 
     @BeforeEach
     void setUp(){
-        testUser = User.builder()
-                .build();
+        testUser = new User();
+        testUser.setRole("USER");
+        testUser.setUsername("testUser");
         userRepository.save(testUser);
 
         testPlace = placeRepository.findById(29633L)
