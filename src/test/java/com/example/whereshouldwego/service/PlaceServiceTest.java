@@ -1,4 +1,4 @@
-package com.example.whereshouldwego.service.secondary;
+package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.dto.response.PlaceResponse;

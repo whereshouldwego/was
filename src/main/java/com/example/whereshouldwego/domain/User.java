@@ -1,12 +1,13 @@
 package com.example.whereshouldwego.domain;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.Setter;
 
 @Entity
-@Getter
 @Setter
+@Getter
 @Table(name = "users")
 public class User {
 

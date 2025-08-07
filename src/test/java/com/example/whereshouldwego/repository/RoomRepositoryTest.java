@@ -3,6 +3,8 @@
 //import com.example.whereshouldwego.domain.Room;
 //import com.example.whereshouldwego.domain.User;
 //import com.example.whereshouldwego.repository.postgres.RoomRepository;
+//
+//import com.example.whereshouldwego.repository.postgres.UserRepository;
 //import com.example.whereshouldwego.util.RoomCodeUtil;
 //import org.junit.jupiter.api.AfterEach;
 //import org.junit.jupiter.api.BeforeEach;
@@ -10,12 +12,14 @@
 //import org.junit.jupiter.api.Test;
 //import org.springframework.beans.factory.annotation.Autowired;
 //import org.springframework.boot.test.context.SpringBootTest;
+//import org.springframework.test.context.ActiveProfiles;
 //
 //import java.util.Optional;
 //
 //import static org.assertj.core.api.Assertions.assertThat;
 //
 //@SpringBootTest
+//@ActiveProfiles("test")
 //public class RoomRepositoryTest {
 //    @Autowired
 //    private RoomRepository roomRepository;
@@ -28,8 +32,10 @@
 //    // 테스트 시작 전 userRepository와 roomRepository에 테스트 데이터 삽입
 //    @BeforeEach
 //    public void doBeforeEach(){
-//        testUser = User.builder()
-//                .build();
+//        testUser = new User();
+//        testUser.setUsername("testUser");
+//        testUser.setRole("USER");
+//        userRepository.save(testUser);
 //        userRepository.save(testUser);
 //
 //        testRoom = Room.builder()

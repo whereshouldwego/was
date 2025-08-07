@@ -1,4 +1,4 @@
-package com.example.whereshouldwego.repository.secondary;
+package com.example.whereshouldwego.repository;
 
 import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.repository.postgres.PlaceRepository;
