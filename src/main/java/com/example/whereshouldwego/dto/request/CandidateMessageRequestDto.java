@@ -1,5 +1,6 @@
 package com.example.whereshouldwego.dto.request;
 
+import com.example.whereshouldwego.domain.CandidateMessage;
 import com.example.whereshouldwego.domain.type.CandidateActionType;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -13,4 +14,11 @@ public class CandidateMessageRequestDto {
     private String roomCode;
     private Long placeId;
     private CandidateActionType actionType;
+
+    public CandidateMessage toEntity(Long roomId) {
+        return CandidateMessage.builder()
+                .roomId(roomId)
+                .placeId(this.placeId)
+                .build();
+    }
 }

@@ -35,14 +35,11 @@ public class CandidateService {
         Long roomId = decode(roomCode);
         validate(dto, roomCode, roomId);
 
-        Long placeId = dto.getPlaceId();
-        Long userId = dto.getUserId();
-
         switch (dto.getActionType()) {
-            case ADD_PLACE -> addPlace(roomId, placeId);
-            case REMOVE_PLACE -> removePlace(roomId, placeId);
-            case ADD_VOTE -> addVote(roomId, userId, placeId);
-            case REMOVE_VOTE -> removeVote(roomId, userId, placeId);
+            case ADD_PLACE -> addPlace(roomId, dto);
+            case REMOVE_PLACE -> removePlace(roomId, dto);
+            case ADD_VOTE -> addVote(roomId, dto);
+            case REMOVE_VOTE -> removeVote(roomId, dto);
             default -> throw new IllegalArgumentException("Unknown actionType: " + dto.getActionType());
         }
 
@@ -59,14 +56,7 @@ public class CandidateService {
                     .orElseThrow(() -> new IllegalArgumentException("place not found: " + placeId));
 
             List<Long> votedUserIds = voteRepository.findVotedUserIds(roomId, placeId);
-            int voteCount = votedUserIds.size();
-
-            result.add(CandidateMessageResponseDto.builder()
-                    .roomCode(roomCode)
-                    .place(PlaceResponse.from(place))
-                    .votedUserIds(votedUserIds)
-                    .voteCount(voteCount)
-                    .build());
+            result.add(CandidateMessageResponseDto.fromEntity(roomCode, place, votedUserIds));
         }
 
         return result;
@@ -93,31 +83,28 @@ public class CandidateService {
         }
     }
 
-    private void addPlace(Long roomId, Long placeId) {
-        if (!candidateRepository.existsByRoomIdAndPlaceId(roomId, placeId)) {
-            candidateRepository.save(CandidateMessage.builder()
-                    .roomId(roomId)
-                    .placeId(placeId)
-                    .build());
+    private void addPlace(Long roomId, CandidateMessageRequestDto dto) {
+        if (!candidateRepository.existsByRoomIdAndPlaceId(roomId, dto.getPlaceId())) {
+            candidateRepository.save(dto.toEntity(roomId));
         }
     }
 
-    private void removePlace(Long roomId, Long placeId) {
-        candidateRepository.deleteByRoomIdAndPlaceId(roomId, placeId);
-        voteRepository.deleteByRoomIdAndPlaceId(roomId, placeId);
+    private void removePlace(Long roomId, CandidateMessageRequestDto dto) {
+        candidateRepository.deleteByRoomIdAndPlaceId(roomId, dto.getPlaceId());
+        voteRepository.deleteByRoomIdAndPlaceId(roomId, dto.getPlaceId());
     }
 
-    private void addVote(Long roomId, Long userId, Long placeId) {
-        if (!voteRepository.existsByRoomIdAndUserIdAndPlaceId(roomId, userId, placeId)) {
+    private void addVote(Long roomId, CandidateMessageRequestDto dto) {
+        if (!voteRepository.existsByRoomIdAndUserIdAndPlaceId(roomId, dto.getUserId(), dto.getPlaceId())) {
             voteRepository.save(Vote.builder()
                     .roomId(roomId)
-                    .userId(userId)
-                    .placeId(placeId)
+                    .userId(dto.getUserId())
+                    .placeId(dto.getPlaceId())
                     .build());
         }
     }
 
-    private void removeVote(Long roomId, Long userId, Long placeId) {
-        voteRepository.deleteByRoomIdAndUserIdAndPlaceId(roomId, userId, placeId);
+    private void removeVote(Long roomId, CandidateMessageRequestDto dto) {
+        voteRepository.deleteByRoomIdAndUserIdAndPlaceId(roomId, dto.getUserId(), dto.getPlaceId());
     }
 }
