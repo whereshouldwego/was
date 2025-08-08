@@ -70,7 +70,7 @@
         };
 
         // @MessageMapping("/candidate.{roomCode}")에 매핑됨
-        stompClient.send(`/ws/send/candidate.${roomCode}`, {}, JSON.stringify(payload));
+        stompClient.send(`/ws/candidate.${roomCode}`, {}, JSON.stringify(payload));
         logMessage(`📤 Sent: ` + JSON.stringify(payload));
     }
 </script>

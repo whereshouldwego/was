@@ -1,12 +1,10 @@
 package com.example.whereshouldwego.service;
 
-import com.example.whereshouldwego.domain.CandidateMessage;
 import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.domain.Vote;
 import com.example.whereshouldwego.domain.type.CandidateActionType;
 import com.example.whereshouldwego.dto.request.CandidateMessageRequestDto;
 import com.example.whereshouldwego.dto.response.CandidateMessageResponseDto;
-import com.example.whereshouldwego.dto.response.PlaceResponse;
 import com.example.whereshouldwego.repository.postgres.CandidateRepository;
 import com.example.whereshouldwego.repository.postgres.PlaceRepository;
 import com.example.whereshouldwego.repository.postgres.VoteRepository;
@@ -19,7 +17,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static com.example.whereshouldwego.util.RoomCodeUtil.decode;
-import static com.example.whereshouldwego.util.RoomCodeUtil.encode;
 
 @Service
 @RequiredArgsConstructor
@@ -106,5 +103,10 @@ public class CandidateService {
 
     private void removeVote(Long roomId, CandidateMessageRequestDto dto) {
         voteRepository.deleteByRoomIdAndUserIdAndPlaceId(roomId, dto.getUserId(), dto.getPlaceId());
+    }
+
+    public List<CandidateMessageResponseDto> getCandidateHistory(String roomCode) {
+        Long roomId = decode(roomCode);
+        return getCandidatesSortedByVotes(roomId, roomCode);
     }
 }
