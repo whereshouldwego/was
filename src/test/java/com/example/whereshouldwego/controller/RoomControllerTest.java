@@ -31,10 +31,6 @@ public class RoomControllerTest {
     @Autowired
     private RoomRepository roomRepository;
 
-    @BeforeEach
-    void setUp() {
-        roomRepository.deleteAll();
-    }
 
     @Test
     void createRoomTest() throws Exception {
