@@ -10,13 +10,17 @@ import java.util.List;
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Long> {
 
-    boolean existsByRoomCodeAndUserIdAndPlaceId(String roomCode, Long userId, Long placeId);
+    boolean existsByRoomIdAndUserIdAndPlaceId(Long roomId, Long userId, Long placeId);
 
-    void deleteByRoomCodeAndUserIdAndPlaceId(String roomCode, Long userId, Long placeId);
+    void deleteByRoomIdAndUserIdAndPlaceId(Long roomId, Long userId, Long placeId);
 
-    void deleteByRoomCodeAndPlaceId(String roomCode, Long placeId);
+    void deleteByRoomIdAndPlaceId(Long roomId, Long placeId);
 
-    @Query("select v.userId from Vote v where v.roomCode = :roomCode and v.placeId = :placeId")
-    List<Long> findVotedUserIds(String roomCode, Long placeId);
+    @Query("""
+        SELECT v.userId 
+        FROM Vote v 
+        WHERE v.roomId = :roomId AND v.placeId = :placeId
+    """)
+    List<Long> findVotedUserIds(Long roomId, Long placeId);
 
 }

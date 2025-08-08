@@ -17,7 +17,7 @@ public class Vote {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String roomCode;
     private Long userId;
     private Long placeId;
+    private Long roomId;
 }

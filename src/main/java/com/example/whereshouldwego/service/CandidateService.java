@@ -3,6 +3,7 @@ package com.example.whereshouldwego.service;
 import com.example.whereshouldwego.domain.CandidateMessage;
 import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.domain.Vote;
+import com.example.whereshouldwego.domain.type.CandidateActionType;
 import com.example.whereshouldwego.dto.request.CandidateMessageRequestDto;
 import com.example.whereshouldwego.dto.response.CandidateMessageResponseDto;
 import com.example.whereshouldwego.dto.response.PlaceResponse;
@@ -14,7 +15,11 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+
+import static com.example.whereshouldwego.util.RoomCodeUtil.decode;
+import static com.example.whereshouldwego.util.RoomCodeUtil.encode;
 
 @Service
 @RequiredArgsConstructor
@@ -27,27 +32,52 @@ public class CandidateService {
 
     @Transactional
     public void handleIncomingCandidate(CandidateMessageRequestDto dto, String roomCode) {
-        validate(dto, roomCode);
+        Long roomId = decode(roomCode);
+        validate(dto, roomCode, roomId);
 
         Long placeId = dto.getPlaceId();
         Long userId = dto.getUserId();
 
         switch (dto.getActionType()) {
-            case ADD_PLACE -> addPlace(roomCode, placeId);
-            case REMOVE_PLACE -> removePlace(roomCode, placeId);
-            case ADD_VOTE -> addVote(roomCode, userId, placeId);
-            case REMOVE_VOTE -> removeVote(roomCode, userId, placeId);
+            case ADD_PLACE -> addPlace(roomId, placeId);
+            case REMOVE_PLACE -> removePlace(roomId, placeId);
+            case ADD_VOTE -> addVote(roomId, userId, placeId);
+            case REMOVE_VOTE -> removeVote(roomId, userId, placeId);
             default -> throw new IllegalArgumentException("Unknown actionType: " + dto.getActionType());
         }
 
-        CandidateMessageResponseDto response = buildResponse(roomCode, placeId);
-
+        List<CandidateMessageResponseDto> response = getCandidatesSortedByVotes(roomId, roomCode);
         messagingTemplate.convertAndSend("/topic/candidate." + roomCode, response);
     }
 
-    private void validate(CandidateMessageRequestDto dto, String roomCode) {
+    public List<CandidateMessageResponseDto> getCandidatesSortedByVotes(Long roomId, String roomCode) {
+        List<Long> sortedPlaceIds = candidateRepository.findCandidatePlaceIdsOrderByVoteCount(roomId);
+
+        List<CandidateMessageResponseDto> result = new ArrayList<>();
+        for (Long placeId : sortedPlaceIds) {
+            Place place = placeRepository.findById(placeId)
+                    .orElseThrow(() -> new IllegalArgumentException("place not found: " + placeId));
+
+            List<Long> votedUserIds = voteRepository.findVotedUserIds(roomId, placeId);
+            int voteCount = votedUserIds.size();
+
+            result.add(CandidateMessageResponseDto.builder()
+                    .roomCode(roomCode)
+                    .place(PlaceResponse.from(place))
+                    .votedUserIds(votedUserIds)
+                    .voteCount(voteCount)
+                    .build());
+        }
+
+        return result;
+    }
+
+    private void validate(CandidateMessageRequestDto dto, String roomCode, Long roomId) {
         if (roomCode == null || roomCode.isBlank()) {
             throw new IllegalArgumentException("roomCode is required");
+        }
+        if (roomId == null) {
+            throw new IllegalArgumentException("Invalid roomCode: cannot decode to roomId");
         }
         if (dto.getPlaceId() == null) {
             throw new IllegalArgumentException("placeId is required");
@@ -55,58 +85,39 @@ public class CandidateService {
         if (dto.getActionType() == null) {
             throw new IllegalArgumentException("actionType is required");
         }
-        // ADD/REMOVE_VOTE 에서는 userId 필요
-        switch (dto.getActionType()) {
-            case ADD_VOTE, REMOVE_VOTE -> {
-                if (dto.getUserId() == null) {
-                    throw new IllegalArgumentException("userId is required for vote actions");
-                }
+        if (dto.getActionType() == CandidateActionType.ADD_VOTE ||
+                dto.getActionType() == CandidateActionType.REMOVE_VOTE) {
+            if (dto.getUserId() == null) {
+                throw new IllegalArgumentException("userId is required for vote actions");
             }
-            default -> { }
         }
     }
 
-    private CandidateMessageResponseDto buildResponse(String roomCode, Long placeId) {
-        Place place = placeRepository.findById(placeId)
-                .orElseThrow(() -> new IllegalArgumentException("place not found: " + placeId));
-        PlaceResponse placeResponse = PlaceResponse.from(place);
-
-        List<Long> votedUserIds = voteRepository.findVotedUserIds(roomCode, placeId);
-        int voteCount = votedUserIds.size();
-
-        return CandidateMessageResponseDto.builder()
-                .roomCode(roomCode)
-                .place(placeResponse)
-                .votedUserIds(votedUserIds)
-                .voteCount(voteCount)
-                .build();
-    }
-
-    private void addPlace(String roomCode, Long placeId) {
-        if (!candidateRepository.existsByRoomCodeAndPlaceId(roomCode, placeId)) {
+    private void addPlace(Long roomId, Long placeId) {
+        if (!candidateRepository.existsByRoomIdAndPlaceId(roomId, placeId)) {
             candidateRepository.save(CandidateMessage.builder()
-                    .roomCode(roomCode)
+                    .roomId(roomId)
                     .placeId(placeId)
                     .build());
         }
     }
 
-    private void removePlace(String roomCode, Long placeId) {
-        candidateRepository.deleteByRoomCodeAndPlaceId(roomCode, placeId);
-        voteRepository.deleteByRoomCodeAndPlaceId(roomCode, placeId);
+    private void removePlace(Long roomId, Long placeId) {
+        candidateRepository.deleteByRoomIdAndPlaceId(roomId, placeId);
+        voteRepository.deleteByRoomIdAndPlaceId(roomId, placeId);
     }
 
-    private void addVote(String roomCode, Long userId, Long placeId) {
-        if (!voteRepository.existsByRoomCodeAndUserIdAndPlaceId(roomCode, userId, placeId)) {
+    private void addVote(Long roomId, Long userId, Long placeId) {
+        if (!voteRepository.existsByRoomIdAndUserIdAndPlaceId(roomId, userId, placeId)) {
             voteRepository.save(Vote.builder()
-                    .roomCode(roomCode)
+                    .roomId(roomId)
                     .userId(userId)
                     .placeId(placeId)
                     .build());
         }
     }
 
-    private void removeVote(String roomCode, Long userId, Long placeId) {
-        voteRepository.deleteByRoomCodeAndUserIdAndPlaceId(roomCode, userId, placeId);
+    private void removeVote(Long roomId, Long userId, Long placeId) {
+        voteRepository.deleteByRoomIdAndUserIdAndPlaceId(roomId, userId, placeId);
     }
 }
