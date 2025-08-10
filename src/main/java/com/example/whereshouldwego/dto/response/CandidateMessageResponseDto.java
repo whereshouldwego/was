@@ -21,7 +21,7 @@ public class CandidateMessageResponseDto {
     public static CandidateMessageResponseDto fromEntity(String roomCode, Place place, List<Long> votedUserIds) {
         return CandidateMessageResponseDto.builder()
                 .roomCode(roomCode)
-                .place(PlaceResponse.from(place))
+                .place(PlaceResponse.fromEntity(place))
                 .votedUserIds(votedUserIds)
                 .voteCount(votedUserIds.size())
                 .build();
