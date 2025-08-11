@@ -39,4 +39,8 @@ public class RoomParticipant {
     private LocalDateTime participatedAt;
 
     private String startLocation;
+
+    public void updateUser(User newUser) {
+        this.user = newUser;
+    }
 }

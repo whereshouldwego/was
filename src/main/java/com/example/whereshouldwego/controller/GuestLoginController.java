@@ -1,15 +1,15 @@
 package com.example.whereshouldwego.controller;
 
-import com.example.whereshouldwego.dto.response.GuestLoginResponse;
-import com.example.whereshouldwego.dto.response.LoginSuccessResponse;
+import com.example.whereshouldwego.dto.response.TokenResponse;
 import com.example.whereshouldwego.service.GuestLoginService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -19,25 +19,20 @@ public class GuestLoginController {
     private final GuestLoginService guestLoginService;
 
     @PostMapping("/api/auth/guest")
-    public ResponseEntity<LoginSuccessResponse> loginProcess(
+    public ResponseEntity<Void> loginProcess(
             @CookieValue(value = "refresh", required = false) String refresh,
-            @RequestParam String roomCode,
             HttpServletResponse response) {
 
-        // access 토큰, refresh 토큰, nickname, userId 받아옴
-        GuestLoginResponse guestLoginResponse = guestLoginService.guestLoginProcess(refresh, roomCode);
+        // access 토큰, refresh 토큰 받아옴
+        TokenResponse tokens = guestLoginService.guestLoginProcess(refresh);
 
-        // 새로운 refresh 토큰을 쿠키에 담아 반환
-        response.addCookie(createCookie("refresh", guestLoginResponse.getRefreshToken()));
+        // access 토큰을 Authorization 헤더에 담아 반환
+        response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.getAccessToken());
 
-        // access 토큰, nickname, userId만 반환
-        LoginSuccessResponse loginSuccessResponse = new LoginSuccessResponse(
-                guestLoginResponse.getUserId(),
-                guestLoginResponse.getNickname(),
-                guestLoginResponse.getAccessToken()
-        );
+        // refresh 토큰을 쿠키에 담아 반환
+        response.addCookie(createCookie("refresh", tokens.getRefreshToken()));
 
-        return ResponseEntity.ok(loginSuccessResponse);
+        return ResponseEntity.ok().build();
     }
 
     private Cookie createCookie(String key, String value) {

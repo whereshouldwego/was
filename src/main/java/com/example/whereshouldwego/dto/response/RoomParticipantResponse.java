@@ -7,10 +7,8 @@ import lombok.Setter;
 @Getter
 @Setter
 @AllArgsConstructor
-public class GuestLoginResponse {
+public class RoomParticipantResponse {
 
     private Long userId;
     private String nickname;
-    private String accessToken;
-    private String refreshToken;
 }
