@@ -19,6 +19,8 @@ import org.springframework.test.context.ActiveProfiles;
 import org.springframework.test.web.servlet.MockMvc;
 
 
+import java.util.Optional;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;
@@ -44,12 +46,9 @@ public class FavoriteControllerTest {
     private Place place;
     @BeforeEach
     public void setUp(){
-        favoriteRepository.deleteAll();
-        userRepository.deleteAll();
-        user = new User();
-        user.setUsername("testUser");
-        user.setRole("USER");
-        user = userRepository.save(user);
+//        favoriteRepository.deleteAll();
+//        userRepository.deleteAll();
+        user= userRepository.findById(11L).get();
         place = placeRepository.findById(29633L)
                 .orElseThrow(() -> new IllegalArgumentException("해당 장소가 존재하지 않습니다."));
 

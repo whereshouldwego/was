@@ -3,6 +3,7 @@ package com.example.whereshouldwego.controller;
 import com.example.whereshouldwego.dto.response.PlaceResponse;
 import com.example.whereshouldwego.service.PlaceService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -16,7 +17,8 @@ public class PlaceController {
 
     //특정 장소 조회
     @GetMapping("/{placeId}")
-    public PlaceResponse get(@PathVariable("placeId") Long placeId){
-        return placeService.getPlaceById(placeId);
+    public ResponseEntity<PlaceResponse> get(@PathVariable("placeId") Long placeId){
+        PlaceResponse place = placeService.getPlaceById(placeId);
+        return ResponseEntity.ok(place);
     }
 }

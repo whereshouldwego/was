@@ -38,21 +38,19 @@ public class FavoriteServiceTest {
     private Place testPlace;
     @BeforeEach
     public void setUp(){
-        testUser = new User();
-        testUser.setUsername("testUser");
-        testUser.setRole("USER");
+        testUser = userRepository.findById(11L).get();
         userRepository.save(testUser);
 
         testPlace = placeRepository.findById(29633L)
                 .orElseThrow(() -> new IllegalArgumentException("해당 장소가 존재하지 않습니다."));
     }
 
-    @AfterEach
+//    @AfterEach
 //    @Disabled
-    public void doAfterEach(){
-        favoriteRepository.deleteAll();
-        userRepository.deleteAll();
-    }
+//    public void doAfterEach(){
+//        favoriteRepository.deleteAll();
+//        userRepository.deleteAll();
+//    }
 
     @Test
     @DisplayName("1. 찜 등록 성공")

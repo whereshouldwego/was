@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>Candidate WebSocket Test</title>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<h2>WebSocket Candidate Test</h2>
+
+<div>
+    <label>Room Code: <input type="text" id="roomCode" value="1234"></label><br><br>
+    <label>Place ID: <input type="number" id="placeId" value="1"></label><br><br>
+    <label>User ID: <input type="number" id="userId" value="101"></label><br><br>
+    <label>Action Type:
+        <select id="actionType">
+            <option value="ADD_PLACE">ADD_PLACE</option>
+            <option value="REMOVE_PLACE">REMOVE_PLACE</option>
+            <option value="ADD_VOTE" selected>ADD_VOTE</option>
+            <option value="REMOVE_VOTE">REMOVE_VOTE</option>
+        </select>
+    </label><br><br>
+
+    <button onclick="connect()">Connect & Subscribe</button>
+    <button onclick="sendMessage()">Send Message</button>
+</div>
+
+<hr>
+
+<div id="log" style="white-space: pre-line; background: #f5f5f5; padding: 10px; border: 1px solid #ccc;">
+</div>
+
+<script>
+    let stompClient = null;
+
+    function logMessage(message) {
+        const log = document.getElementById("log");
+        log.textContent += message + "\n";
+    }
+
+    function connect() {
+        // 같은 포트에서 제공되므로 절대 URL이 아닌 /ws만 사용
+        const socket = new SockJS("/ws");
+        stompClient = Stomp.over(socket);
+
+        const roomCode = document.getElementById("roomCode").value;
+
+        stompClient.connect({}, () => {
+            logMessage("✅ Connected to WebSocket");
+
+            stompClient.subscribe(`/topic/candidate.${roomCode}`, (message) => {
+                logMessage("📩 Received: " + message.body);
+            });
+
+            logMessage(`📡 Subscribed to /topic/candidate.${roomCode}`);
+        });
+    }
+
+    function sendMessage() {
+        const roomCode = document.getElementById("roomCode").value;
+        const placeId = document.getElementById("placeId").value;
+        const userId = document.getElementById("userId").value;
+        const actionType = document.getElementById("actionType").value;
+
+        const payload = {
+            placeId: Number(placeId),
+            userId: Number(userId),
+            actionType: actionType
+        };
+
+        // @MessageMapping("/candidate.{roomCode}")에 매핑됨
+        stompClient.send(`/ws/candidate.${roomCode}`, {}, JSON.stringify(payload));
+        logMessage(`📤 Sent: ` + JSON.stringify(payload));
+    }
+</script>
+</body>
+</html>

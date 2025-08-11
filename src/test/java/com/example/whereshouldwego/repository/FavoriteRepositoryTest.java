@@ -32,11 +32,7 @@ public class FavoriteRepositoryTest {
 
     @BeforeEach
     void setUp(){
-        testUser = new User();
-        testUser.setRole("USER");
-        testUser.setUsername("testUser");
-        userRepository.save(testUser);
-
+        testUser = userRepository.findById(11L).get();
         testPlace = placeRepository.findById(29633L)
                 .orElseThrow(() -> new IllegalArgumentException("테스트용 Place가 존재하지 않습니다."));
     }

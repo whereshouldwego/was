@@ -39,8 +39,8 @@ public class RoomController {
 
     // 약속방 url 조회
     @GetMapping("/{roomCode}")
-    public RoomResponse get(@PathVariable("roomCode") String roomCode){
-
-        return roomService.getRoomByCode(roomCode);
+    public ResponseEntity<RoomResponse> get(@PathVariable("roomCode") String roomCode){
+        RoomResponse roomResponse = roomService.getRoomByCode(roomCode);
+        return ResponseEntity.ok(roomResponse);
     }
 }

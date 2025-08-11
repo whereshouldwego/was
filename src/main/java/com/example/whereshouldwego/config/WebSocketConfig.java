@@ -1,6 +1,5 @@
 package com.example.whereshouldwego.config;
 
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.messaging.simp.config.MessageBrokerRegistry;
 import org.springframework.web.socket.config.annotation.EnableWebSocketMessageBroker;
@@ -11,6 +10,8 @@ import org.springframework.web.socket.config.annotation.WebSocketMessageBrokerCo
 @EnableWebSocketMessageBroker
 public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
+    /*
+    // 외부 Broker(RabbitMQ) 용 설정
     @Value("${rabbitmq.host}")
     private String rabbitmqHost;
 
@@ -39,10 +40,22 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         registry.setApplicationDestinationPrefixes("/ws/send");
     }
+     */
+
+    // Simple Broker 용 설정
+    @Override
+    public void configureMessageBroker(MessageBrokerRegistry registry) {
+        registry.enableSimpleBroker("/topic", "/queue");
+
+        registry.setApplicationDestinationPrefixes("/ws");
+    }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // STOMP endpoint
-        registry.addEndpoint("/ws").withSockJS();
+        registry
+                .addEndpoint("/ws")
+                .setAllowedOriginPatterns("*")
+                .withSockJS();
     }
 }
