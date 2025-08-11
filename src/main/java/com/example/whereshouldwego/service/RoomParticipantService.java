@@ -28,6 +28,19 @@ public class RoomParticipantService {
             "유니콘", "도깨비", "스핑크스", "드래곤", "구미호", "마법사", "닌자", "연금술사", "모험가", "기사"
     );
 
+    private final List<String> colors = Arrays.asList(
+            "#FF5733", // 오렌지-레드
+            "#33FF57", // 밝은 연두
+            "#3357FF", // 진한 블루
+            "#FFD700", // 골드
+            "#8A2BE2", // 블루바이올렛
+            "#FF69B4", // 핫핑크
+            "#00CED1", // 다크터콰이즈
+            "#DC143C", // 크림슨
+            "#2E8B57", // 시그니처 그린
+            "#FF8C00"  // 다크 오렌지
+    );
+
     public RoomParticipantResponse roomParticipateProcess(String roomCode, CustomUserDetails userDetails) {
 
         // 1. 방(Room) 찾기
@@ -45,7 +58,8 @@ public class RoomParticipantService {
                     // 참여 기록이 있으면 해당 정보를 DTO로 변환하여 반환
                     return new RoomParticipantResponse(
                             user.getId(),
-                            roomParticipant.getNickname()
+                            roomParticipant.getNickname(),
+                            roomParticipant.getColor()
                     );
                 })
                 .orElseGet(() -> {
@@ -59,17 +73,26 @@ public class RoomParticipantService {
                         nickname = "익명의 " + noun;
                     } while (roomParticipantRepository.existsByRoomAndNickname(room, nickname));
 
+                    // 색깔 지정
+                    String color;
+                    do {
+                        String candidate = colors.get(random.nextInt(colors.size()));
+                        color = candidate;
+                    } while (roomParticipantRepository.existsByRoomAndColor(room, color));
+
                     RoomParticipant newParticipant = RoomParticipant.builder()
                             .room(room)
                             .user(user)
                             .nickname(nickname)
+                            .color(color)
                             .build();
 
                     roomParticipantRepository.save(newParticipant);
 
                     return new RoomParticipantResponse(
                             user.getId(),
-                            newParticipant.getNickname()
+                            newParticipant.getNickname(),
+                            newParticipant.getColor()
                     );
                 });
     }

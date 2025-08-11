@@ -11,4 +11,5 @@ public class RoomParticipantResponse {
 
     private Long userId;
     private String nickname;
+    private String color;
 }

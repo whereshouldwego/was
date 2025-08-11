@@ -13,6 +13,7 @@ import java.util.Optional;
 public interface RoomParticipantRepository extends JpaRepository<RoomParticipant, Long> {
 
     Optional<RoomParticipant> findByRoomAndUser(Room room, User user);
-    Boolean existsByRoomAndNickname(Room room, String nickname);
+    boolean existsByRoomAndNickname(Room room, String nickname);
+    boolean existsByRoomAndColor(Room room, String color);
     List<RoomParticipant> findAllByUser(User user);
 }
