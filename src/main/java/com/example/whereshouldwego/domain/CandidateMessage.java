@@ -7,10 +7,10 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
-@NoArgsConstructor
-@AllArgsConstructor
 @Builder
 @Getter
+@NoArgsConstructor
+@AllArgsConstructor
 @Table(name = "candidates")
 public class CandidateMessage {
     @Id

@@ -12,16 +12,18 @@ import java.time.LocalDateTime;
 @Builder
 public class ChatMessageResponseDto {
     private String id;
-    private String roomCode;
     private Long userId;
+    private String username;
+    private String roomCode;
     private String content;
     private LocalDateTime createdAt;
 
     public static ChatMessageResponseDto fromEntity(ChatMessage chatMessage) {
         return ChatMessageResponseDto.builder()
-                .id(chatMessage.getId() != null ? chatMessage.getId().toString() : null)
-                .roomCode(chatMessage.getRoomCode())
+                .id(String.valueOf(chatMessage.getId()))
                 .userId(chatMessage.getUserId())
+                .username(chatMessage.getUsername())
+                .roomCode(chatMessage.getRoomCode())
                 .content(chatMessage.getContent())
                 .createdAt(chatMessage.getCreatedAt())
                 .build();

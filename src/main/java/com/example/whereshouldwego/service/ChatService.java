@@ -19,7 +19,7 @@ public class ChatService {
     private final ChatMessageRepository chatMessageRepository;
 
     public void handleIncomingChat(ChatMessageRequestDto dto, String roomCode) {
-        ChatMessage saved = chatMessageRepository.save(dto.toEntity());
+        ChatMessage saved = chatMessageRepository.save(dto.toEntity(roomCode));
 
         ChatMessageResponseDto response = ChatMessageResponseDto.fromEntity(saved);
 

@@ -1,19 +1,4 @@
 services:
-  rabbitmq:
-    image: rabbitmq:3-management
-    container_name: rabbitmq
-    ports:
-      - "5672:5672" # AMQP
-      - "15672:15672" # Management
-      - "61613:61613" # STOMP
-    volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
-      - ./plugins/enabled_plugins:/etc/rabbitmq/enabled_plugins:ro
-    environment:
-      RABBITMQ_DEFAULT_USER: guest
-      RABBITMQ_DEFAULT_PASS: guest
-      RABBITMQ_ENABLED_PLUGINS_FILE: /etc/rabbitmq/enabled_plugins
-
   mongo:
     image: mongo:6.0
     container_name: mongo

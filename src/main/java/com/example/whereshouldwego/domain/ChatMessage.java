@@ -10,17 +10,18 @@ import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
 
-@Document(collection = "chat_messages")
+@Getter
+@Builder
 @NoArgsConstructor
 @AllArgsConstructor
-@Builder
-@Getter
+@Document(collection = "chat_messages")
 public class ChatMessage {
     @Id
     private ObjectId id;
 
-    private String roomCode;
     private Long userId;
+    private String username;
+    private String roomCode;
     private String content;
     private LocalDateTime createdAt;
 }

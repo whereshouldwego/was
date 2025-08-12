@@ -4,6 +4,7 @@ import com.example.whereshouldwego.dto.request.ChatMessageRequestDto;
 import com.example.whereshouldwego.dto.response.ChatMessageResponseDto;
 import com.example.whereshouldwego.service.ChatService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -24,7 +25,7 @@ public class ChatController {
     }
 
     @GetMapping("/api/chat/history/{roomCode}")
-    public List<ChatMessageResponseDto> getChatHistory(@PathVariable String roomCode) {
-        return chatService.getChatHistory(roomCode);
+    public ResponseEntity<List<ChatMessageResponseDto>> getChatHistory(@PathVariable String roomCode) {
+        return ResponseEntity.ok(chatService.getChatHistory(roomCode));
     }
 }
