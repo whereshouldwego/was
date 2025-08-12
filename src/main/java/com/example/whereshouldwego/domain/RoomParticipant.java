@@ -34,9 +34,15 @@ public class RoomParticipant {
     @Column(nullable = false)
     private String nickname;
 
+    private String color;
+
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime participatedAt;
 
     private String startLocation;
+
+    public void updateUser(User newUser) {
+        this.user = newUser;
+    }
 }

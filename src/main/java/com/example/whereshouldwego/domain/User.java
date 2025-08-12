@@ -27,4 +27,12 @@ public class User {
     private String name;
     private String email;
     private String image;
+
+    public void updateToSocialUser(String username, String role, String name, String email, String image) {
+        this.username = username;
+        this.role = role;
+        this.name = name;
+        this.email = email;
+        this.image = image;
+    }
 }

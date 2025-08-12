@@ -1,12 +1,13 @@
 package com.example.whereshouldwego.oauth2;
 
-import com.example.whereshouldwego.dto.CustomOAuth2User;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.jwt.JWTUtil;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -25,24 +26,27 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
 
-        CustomOAuth2User customOAuth2User = (CustomOAuth2User) authentication.getPrincipal();
+        CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String username = customOAuth2User.getUsername();
+        String username = customUserDetails.getUsername();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
         GrantedAuthority auth = iterator.next();
         String role = auth.getAuthority();
 
+        // jwt 토큰 생성
         String access = jwtUtil.createJwt("access", username, role, 3600000L);  // 1시간
         String refresh = jwtUtil.createJwt("refresh", username, role, 1209600000L); // 14일
 
-        // response
-        response.setHeader("Authorization", "Bearer " + access);
+        // access 토큰을 Authorization 헤더에 담아 반환
+        response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + access);
+
+        // refresh 토큰을 쿠키에 담아 반환
         response.addCookie(createCookie("refresh", refresh));
 
-        // 프론트엔드로 리디렉션
-        response.sendRedirect("http://localhost:3000/");
+        // 브라우저를 생성된 URL로 리디렉션
+        response.sendRedirect("http://localhost:3000");
     }
 
     private Cookie createCookie(String key, String value) {

@@ -1,7 +1,7 @@
 package com.example.whereshouldwego.messaging;
 
-import com.example.whereshouldwego.dto.CustomOAuth2User;
-import com.example.whereshouldwego.dto.UserDto;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
+import com.example.whereshouldwego.dto.response.UserDto;
 import com.example.whereshouldwego.jwt.JWTUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.Message;
@@ -36,7 +36,7 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             String username = jwtUtil.getUsername(token);
             String role = jwtUtil.getRole(token);
 
-            CustomOAuth2User principal = new CustomOAuth2User(UserDto.fromEntity(null, username, role));
+            CustomUserDetails principal = new CustomUserDetails(UserDto.fromEntity(username, role, null, null, null));
 
             Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
 

@@ -41,8 +41,9 @@ spring:
           kakao:
             client-id: ${KAKAO_CLIENT_ID}
             client-secret: ${KAKAO_CLIENT_SECRET}
-            redirect-uri: "{baseUrl}/login/oauth2/code/kakao"
+            redirect-uri: "{baseUrl}/login/oauth2/code/{registrationId}"
             authorization-grant-type: authorization_code
+            client-authentication-method: client_secret_post
             scope: profile_nickname, profile_image, account_email
         provider:
           kakao:
@@ -63,5 +64,6 @@ spring:
 logging:
   level:
     org.hibernate.SQL: debug
+    org.springframework.security: DEBUG
     org.springframework.security.oauth2.client: DEBUG
     org.springframework.security.oauth2.core: DEBUG

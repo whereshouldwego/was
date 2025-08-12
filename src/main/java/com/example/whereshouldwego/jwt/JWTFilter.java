@@ -1,13 +1,12 @@
 package com.example.whereshouldwego.jwt;
 
-import com.example.whereshouldwego.dto.CustomOAuth2User;
-import com.example.whereshouldwego.dto.UserDto;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
+import com.example.whereshouldwego.dto.response.UserDto;
 import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.validation.constraints.Null;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -76,10 +75,11 @@ public class JWTFilter extends OncePerRequestFilter {
         String role = jwtUtil.getRole(accessToken);
 
         //UserDetails에 회원 정보 객체 담기
-        CustomOAuth2User customOAuth2User = new CustomOAuth2User(UserDto.fromEntity(null, username, role));
+        CustomUserDetails userDetails = new CustomUserDetails(UserDto.fromEntity(username, role, null, null, null));
 
         //스프링 시큐리티 인증 토큰 생성
-        Authentication authToken = new UsernamePasswordAuthenticationToken(customOAuth2User, null, customOAuth2User.getAuthorities());
+        Authentication authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+
         //세션에 사용자 등록
         SecurityContextHolder.getContext().setAuthentication(authToken);
 
