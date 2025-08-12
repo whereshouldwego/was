@@ -19,7 +19,27 @@ public class GuestLoginService {
 
     private final UserRepository userRepository;
     private final RefreshRepository refreshRepository;
+    private final RoomParticipantRepository roomParticipantRepository;
+    private final VoteRepository voteRepository;
     private final JWTUtil jwtUtil;
+
+    @Transactional
+    public void authUpgradeProcess(Long guestId, Long memberId) {
+
+        User guest = userRepository.findById(guestId)
+                .orElseThrow(() -> new IllegalArgumentException("비회원 정보를 찾을 수 없습니다."));
+
+        User member = userRepository.findById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+        // 비회원의 여러 방 참여 기록을 회원의 기록으로 변경
+        roomParticipantRepository.updateMemberIdByGuestId(guestId, memberId);
+
+        // 비회원의 여러 투표 기록을 회원의 기록으로 변경
+        voteRepository.updateMemberIdByGuestId(guestId, memberId);
+
+        userRepository.delete(guest);
+    }
 
     public TokenResponse guestLoginProcess(String refresh) {
 
