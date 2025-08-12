@@ -1,5 +1,6 @@
 package com.example.whereshouldwego.dto.response;
 
+import com.example.whereshouldwego.domain.User;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -15,6 +16,7 @@ public class UserDto {
     private String email;
     private String image;
 
+
     public static UserDto fromEntity(String username, String role, String name, String email, String image) {
         return UserDto.builder()
                 .username(username)
@@ -24,4 +26,15 @@ public class UserDto {
                 .image(image)
                 .build();
     }
+
+    public static UserDto toEntity(User user) {
+        return UserDto.builder()
+                .username(user.getUsername())
+                .role(user.getRole())
+                .name(user.getName())
+                .email(user.getEmail())
+                .image(user.getImage())
+                .build();
+    }
+
 }

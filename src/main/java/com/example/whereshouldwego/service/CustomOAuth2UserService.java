@@ -1,7 +1,10 @@
 package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.dto.response.*;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
+import com.example.whereshouldwego.dto.response.KakaoResponse;
+import com.example.whereshouldwego.dto.response.OAuth2Response;
+import com.example.whereshouldwego.dto.response.UserDto;
 import com.example.whereshouldwego.jwt.JWTUtil;
 import com.example.whereshouldwego.repository.postgres.RoomParticipantRepository;
 import com.example.whereshouldwego.repository.postgres.UserRepository;
@@ -21,8 +24,6 @@ import java.util.Optional;
 public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
     private final UserRepository userRepository;
-    private final RoomParticipantRepository roomParticipantRepository;
-    private final JWTUtil jwtUtil;
 
     @Override
     public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
@@ -58,9 +59,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             userRepository.save(user);
 
-            return new CustomUserDetails(UserDto.fromEntity(user));
-        }
-        else {
+            return new CustomUserDetails(UserDto.toEntity(user));
+        } else {
 
             user = existData.get();
 
@@ -74,7 +74,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             userRepository.save(user);
 
-            return new CustomOAuth2User(UserDto.fromEntity(updatedUser.getUsername(), oAuth2Response.getName(), updatedUser.getRole()));
+            return new CustomUserDetails(UserDto.toEntity(user));
         }
     }
 }

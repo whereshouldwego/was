@@ -80,6 +80,7 @@ public class SecurityConfig {
         http
                 .authorizeHttpRequests((auth) -> auth
                         .requestMatchers("/api/auth/guest").permitAll()
+                        .requestMatchers("/ws/**").permitAll()
                         .anyRequest().permitAll());
 
         // 세션 설정 STATELESS

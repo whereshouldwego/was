@@ -22,7 +22,7 @@
 
 <script>
     let socket;
-    let userId, roomCode;
+    let userId, roomCode, jwtToken;
     const cursors = {};
 
     function connect() {
@@ -30,23 +30,29 @@
         roomCode = document.getElementById('roomId').value.trim();
 
         if (isNaN(userId) || !roomCode) {
-            alert("숫자 User ID와 Room ID를 입력하세요.");
+            alert("숫자 User ID, Room ID, JWT 토큰을 입력하세요.");
             return;
         }
 
+        // 프로토콜 자동 결정 (https → wss, http → ws)
         const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
-        const wsUrl = `${wsProtocol}://${window.location.host}/ws/cursor?roomCode=${roomCode}`;
+
+        // JWT 토큰을 쿼리 파라미터로 전달
+        const wsUrl = `${wsProtocol}://${window.location.host}/ws/cursor?roomCode=${encodeURIComponent(roomCode)}&token=Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IGJlNDhkZmM5LTFmMDEtNGJjNS1iM2UyLWExZDZkMDE4NGY0NCIsInJvbGUiOiJST0xFX0dVRVNUIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJpYXQiOjE3NTQ5ODMxMDIsImV4cCI6MTc1NDk4NjcwMn0.mmE6uq5x61Nt_PpQB3JrkmfgiADcb0MPmug8dyiJ1sM`;
+        console.log("Connecting to:", wsUrl);
+
         socket = new WebSocket(wsUrl);
 
         socket.onopen = () => {
             console.log("🟢 WebSocket 연결됨");
 
+            // 마우스 이동 시 커서 위치 전송
             document.addEventListener('mousemove', (e) => {
                 const payload = {
                     userId,
                     roomCode,
-                    lat: e.clientY, // 나중에 위도 (지도 API 사용)
-                    lng: e.clientX  // 나중에 경도
+                    lat: e.clientY,
+                    lng: e.clientX
                 };
                 socket.send(JSON.stringify(payload));
             });
@@ -55,7 +61,7 @@
         socket.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
-                if (data.userId === userId) return;
+                if (data.userId === userId) return; // 내 커서는 무시
 
                 let cursor = cursors[data.userId];
                 if (!cursor) {
@@ -65,7 +71,6 @@
                     document.body.appendChild(cursor);
                 }
 
-                // 현재는 clientX/clientY로 보냈기 때문에 lng → x, lat → y로 렌더링
                 cursor.style.left = `${data.lng}px`;
                 cursor.style.top = `${data.lat}px`;
             } catch (e) {

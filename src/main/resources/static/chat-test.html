@@ -65,18 +65,26 @@
     }
 
     function connectStomp(roomId) {
+        const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IGJlNDhkZmM5LTFmMDEtNGJjNS1iM2UyLWExZDZkMDE4NGY0NCIsInJvbGUiOiJST0xFX0dVRVNUIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJpYXQiOjE3NTQ5ODMxMDIsImV4cCI6MTc1NDk4NjcwMn0.mmE6uq5x61Nt_PpQB3JrkmfgiADcb0MPmug8dyiJ1sM";
+
         const socket = new SockJS('/ws');
         stompClient = Stomp.over(socket);
 
-         stompClient.connect({}, function () {
-                    subscription = stompClient.subscribe('/topic/chat.' + roomId, function (message) {
-                        const msg = JSON.parse(message.body);
-                        const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
-                document.getElementById('chat').value += display;
-            });
-
-            console.log(`채팅방 "/topic/chat/${roomId}"에 연결됨`);
-        });
+        stompClient.connect(
+            { Authorization: token }, // ★ 토큰을 CONNECT 프레임에 실어 전송
+            function () {
+                subscription = stompClient.subscribe('/topic/chat.' + roomId, function (message) {
+                    const msg = JSON.parse(message.body);
+                    const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
+                    document.getElementById('chat').value += display;
+                });
+                console.log(`채팅방 "/topic/chat.${roomId}"에 연결됨`);
+            },
+            function (error) {
+                console.error("STOMP 연결 실패:", error);
+                alert("WebSocket 연결 실패: " + error);
+            }
+        );
     }
 
     function sendMessage() {
@@ -89,7 +97,7 @@
             return;
         }
 
-        stompClient.send(`/ws/send/chat.${roomId}`, {}, JSON.stringify({
+        stompClient.send(`/ws/chat.${roomId}`, {}, JSON.stringify({
             userId: userId,
             roomCode: roomId,
             content: content
