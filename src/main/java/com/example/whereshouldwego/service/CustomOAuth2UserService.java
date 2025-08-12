@@ -2,7 +2,7 @@ package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.User;
 import com.example.whereshouldwego.dto.CustomOAuth2User;
-import com.example.whereshouldwego.dto.UserDTO;
+import com.example.whereshouldwego.dto.UserDto;
 import com.example.whereshouldwego.dto.response.KakaoResponse;
 import com.example.whereshouldwego.dto.response.OAuth2Response;
 import com.example.whereshouldwego.repository.postgres.UserRepository;
@@ -53,12 +53,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .build();
             userRepository.save(user);
 
-            UserDTO userDTO = new UserDTO();
-            userDTO.setUsername(username);
-            userDTO.setName(oAuth2Response.getName());
-            userDTO.setRole("ROLE_USER");
-
-            return new CustomOAuth2User(userDTO);
+            return new CustomOAuth2User(UserDto.fromEntity(username, oAuth2Response.getName(), "ROLE_USER"));
         }
         else {
 
@@ -71,12 +66,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .build();
             userRepository.save(updatedUser);
 
-            UserDTO userDTO = new UserDTO();
-            userDTO.setUsername(updatedUser.getUsername());
-            userDTO.setName(oAuth2Response.getName());
-            userDTO.setRole(updatedUser.getRole());
-
-            return new CustomOAuth2User(userDTO);
+            return new CustomOAuth2User(UserDto.fromEntity(updatedUser.getUsername(), oAuth2Response.getName(), updatedUser.getRole()));
         }
     }
 }
