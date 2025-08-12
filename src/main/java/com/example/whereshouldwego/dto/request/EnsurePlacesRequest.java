@@ -29,7 +29,7 @@ public class EnsurePlacesRequest {
         private Long kakaoPlaceId;
 
         @NotBlank
-        @JsonAlias("place_name")
+        @JsonAlias({"place_name", "name"})
         private String name;
 
         @JsonAlias("place_url")
