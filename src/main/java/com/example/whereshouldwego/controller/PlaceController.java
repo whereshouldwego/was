@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("api/places")
+@RequestMapping("/api/places")
 @RequiredArgsConstructor
 public class PlaceController {
     private final PlaceService placeService;
