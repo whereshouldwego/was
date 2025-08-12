@@ -14,6 +14,7 @@ import org.springframework.stereotype.Service;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -43,15 +44,15 @@ public class RoomParticipantService {
 
     public RoomParticipantResponse roomParticipateProcess(String roomCode, CustomUserDetails userDetails) {
 
-        // 1. 방(Room) 찾기
+        // 방(Room) 찾기
         Room room = roomRepository.findByRoomCode(roomCode)
                 .orElseThrow(() -> new RuntimeException("해당 방 코드를 가진 방을 찾을 수 없습니다."));
 
-        // 2. 사용자(User) 찾기
+        // 사용자(User) 찾기
         User user = userRepository.findByUsername(userDetails.getUsername())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
-        // 3. 기존 참여 기록 확인
+        // 기존 참여 기록 확인
         return roomParticipantRepository.findByRoomAndUser(room, user)
                 .map(roomParticipant -> {
 
@@ -66,19 +67,35 @@ public class RoomParticipantService {
 
                     // 참여 기록이 없으면 새로운 방 참여 관계 생성
 
-                    // 닉네임 생성
-                    String nickname;
-                    do {
-                        String noun = nouns.get(random.nextInt(nouns.size()));
-                        nickname = "익명의 " + noun;
-                    } while (roomParticipantRepository.existsByRoomAndNickname(room, nickname));
+                    // 방의 모든 참여 기록 가져오기
+                    List<RoomParticipant> roomParticipants = roomParticipantRepository.findAllByRoom(room);
+                    List<String> existNicknames = roomParticipants.stream()
+                            .map(RoomParticipant::getNickname)
+                            .collect(Collectors.toList());
+                    List<String> existColors = roomParticipants.stream()
+                            .map(RoomParticipant::getColor)
+                            .collect(Collectors.toList());
 
-                    // 색깔 지정
-                    String color;
-                    do {
-                        String candidate = colors.get(random.nextInt(colors.size()));
-                        color = candidate;
-                    } while (roomParticipantRepository.existsByRoomAndColor(room, color));
+                    if (roomParticipants.size() >= 10) {
+
+                        throw new RuntimeException("방 참여자가 10명을 초과합니다.");
+                    }
+
+                    // 닉네임 및 색깔 생성
+                    String nickname = null;
+                    String color = null;
+
+                    for (int i = 0; i < nouns.size(); i++) {
+                        String candidateNickname = nouns.get(i);
+                        String candidateColor = colors.get(i);
+
+                        // 닉네임과 색깔이 모두 사용 중이 아닐 때
+                        if (!existNicknames.contains(candidateNickname) && !existColors.contains(candidateColor)) {
+                            nickname = "익명의 " + candidateNickname;
+                            color = candidateColor;
+                            break;
+                        }
+                    }
 
                     RoomParticipant newParticipant = RoomParticipant.builder()
                             .room(room)

@@ -1,7 +1,9 @@
 package com.example.whereshouldwego.oauth2;
 
+import com.example.whereshouldwego.domain.Refresh;
 import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.jwt.JWTUtil;
+import com.example.whereshouldwego.repository.postgres.RefreshRepository;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
@@ -14,6 +16,7 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -22,6 +25,7 @@ import java.util.Iterator;
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
     private final JWTUtil jwtUtil;
+    private final RefreshRepository refreshRepository;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -39,11 +43,19 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String access = jwtUtil.createJwt("access", username, role, 3600000L);  // 1시간
         String refresh = jwtUtil.createJwt("refresh", username, role, 1209600000L); // 14일
 
+        // refresh 토큰 저장
+        Refresh savedRefresh = Refresh.builder()
+                .username(username)
+                .refresh(refresh)
+                .expiration(LocalDateTime.now().plusSeconds(1209600000L / 1000))
+                .build();
+        refreshRepository.save(savedRefresh);
+
         // access 토큰을 Authorization 헤더에 담아 반환
         response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + access);
 
         // refresh 토큰을 쿠키에 담아 반환
-        response.addCookie(createCookie("refresh", refresh));
+        response.addCookie(createCookie("member-refresh", refresh));
 
         // 브라우저를 생성된 URL로 리디렉션
         response.sendRedirect("http://localhost:3000");
@@ -54,7 +66,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(60 * 60 * 24 * 14);
         //cookie.setSecure(true);
-        //cookie.setPath("/");
+        cookie.setPath("/");
         cookie.setHttpOnly(true);
 
         return cookie;

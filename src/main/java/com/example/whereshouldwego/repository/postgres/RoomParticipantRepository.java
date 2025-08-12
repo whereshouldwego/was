@@ -4,6 +4,9 @@ import com.example.whereshouldwego.domain.Room;
 import com.example.whereshouldwego.domain.RoomParticipant;
 import com.example.whereshouldwego.domain.User;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
@@ -13,7 +16,9 @@ import java.util.Optional;
 public interface RoomParticipantRepository extends JpaRepository<RoomParticipant, Long> {
 
     Optional<RoomParticipant> findByRoomAndUser(Room room, User user);
-    boolean existsByRoomAndNickname(Room room, String nickname);
-    boolean existsByRoomAndColor(Room room, String color);
-    List<RoomParticipant> findAllByUser(User user);
+    List<RoomParticipant> findAllByRoom(Room room);
+
+    @Modifying
+    @Query("UPDATE RoomParticipant rp SET rp.user.id = :newUserId WHERE rp.user.id = :oldUserId")
+    void updateMemberIdByGuestId(@Param("oldUserId") Long oldUserId, @Param("newUserId") Long newUserId);
 }

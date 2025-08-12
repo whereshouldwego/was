@@ -29,11 +29,12 @@ public class ReissueController {
         // 쿠키에서 Refresh Token 추출
         String refresh = null;
         Cookie[] cookies = request.getCookies();
-        for (Cookie cookie : cookies) {
-
-            if (cookie.getName().equals("refresh")) {
-
-                refresh = cookie.getValue();
+        if (cookies != null) {
+            for (Cookie cookie : cookies) {
+                if (cookie.getName().equals("guest-refresh") || cookie.getName().equals("member-refresh")) {
+                    refresh = cookie.getValue();
+                    break;
+                }
             }
         }
 
