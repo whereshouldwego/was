@@ -7,7 +7,7 @@ app:
     allowed-origins:
       - https://whereshouldwego.kr
       - https://www.whereshouldwego.kr
-      - http://localhost:5174
+      - http://localhost:*
 
 spring:
   config:
