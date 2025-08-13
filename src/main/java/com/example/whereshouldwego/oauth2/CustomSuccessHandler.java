@@ -1,5 +1,6 @@
 package com.example.whereshouldwego.oauth2;
 
+import com.example.whereshouldwego.config.CorsProps;
 import com.example.whereshouldwego.domain.Refresh;
 import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.jwt.JWTUtil;
@@ -9,7 +10,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -26,11 +26,9 @@ import java.util.List;
 @RequiredArgsConstructor
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
 
-    @Value("${spring.config.url}")
-    private String serverUrl;
-
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
+    private final CorsProps corsProps;
 
     @Override
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
@@ -63,19 +61,19 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("member-refresh", refresh));
 
         // 브라우저를 생성된 URL로 리디렉션 
-        List<String> allowed = List.of(serverUrl, "http://localhost:5173");
         String origin = request.getHeader("Origin");
-        String target = allowed.contains(origin) ? origin : serverUrl;
+        List<String> allowed = corsProps.getAllowedOrigins();
+        String target = allowed.contains(origin) ? origin : allowed.get(0);
         response.sendRedirect(target);
     }
 
     private Cookie createCookie(String key, String value) {
-
         Cookie cookie = new Cookie(key, value);
         cookie.setMaxAge(60 * 60 * 24 * 14);
-        //cookie.setSecure(true);
         cookie.setPath("/");
+
         cookie.setHttpOnly(true);
+        cookie.setSecure(true);
 
         return cookie;
     }
