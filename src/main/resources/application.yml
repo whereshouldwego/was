@@ -4,12 +4,12 @@ server:
 spring:
   config:
     import: optional:file:.env
+    url: ${SERVER_URL}
 
   datasource:
     url: ${POSTGRESQL_HOST}
     username: ${POSTGRESQL_USERNAME}
     password: ${POSTGRESQL_PASSWORD}
-
     driver-class-name: org.postgresql.Driver
 
   jpa:
@@ -23,12 +23,9 @@ spring:
           time_zone: Asia/Seoul
     open-in-view: false
 
-
   data:
     mongodb:
       uri: ${MONGODB_URI}
-    redis:
-      url: ${REDIS_URI}
 
   thymeleaf:
     cache: false
@@ -53,15 +50,6 @@ spring:
             token-uri: https://kauth.kakao.com/oauth/token
             user-info-uri: https://kapi.kakao.com/v2/user/me
             user-name-attribute: id
-
-  rabbitmq:
-    host: ${RABBITMQ_HOST}
-    client:
-      login: ${RABBITMQ_CLIENT_LOGIN}
-      passcode: ${RABBITMQ_CLIENT_PASSCODE}
-    server:
-      login: ${RABBITMQ_SERVER_LOGIN}
-      passcode: ${RABBITMQ_SERVER_PASSCODE}
 
 logging:
   level:

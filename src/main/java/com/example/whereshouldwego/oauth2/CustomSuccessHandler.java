@@ -9,6 +9,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
@@ -19,10 +20,14 @@ import java.io.IOException;
 import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 @Component
 @RequiredArgsConstructor
 public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler {
+
+    @Value("${spring.config.url}")
+    private String serverUrl;
 
     private final JWTUtil jwtUtil;
     private final RefreshRepository refreshRepository;
@@ -58,7 +63,10 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         response.addCookie(createCookie("member-refresh", refresh));
 
         // 브라우저를 생성된 URL로 리디렉션
-        response.sendRedirect("http://localhost:3000");
+        List<String> allowed = List.of(serverUrl, "http://localhost:5173");
+        String origin = request.getHeader("Origin");
+        String target = allowed.contains(origin) ? origin : serverUrl;
+        response.sendRedirect(target);
     }
 
     private Cookie createCookie(String key, String value) {
