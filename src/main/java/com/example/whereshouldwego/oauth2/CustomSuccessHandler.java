@@ -62,7 +62,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // refresh 토큰을 쿠키에 담아 반환
         response.addCookie(createCookie("member-refresh", refresh));
 
-        // 브라우저를 생성된 URL로 리디렉션
+        // 브라우저를 생성된 URL로 리디렉션 
         List<String> allowed = List.of(serverUrl, "http://localhost:5173");
         String origin = request.getHeader("Origin");
         String target = allowed.contains(origin) ? origin : serverUrl;

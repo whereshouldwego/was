@@ -9,6 +9,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -44,8 +45,9 @@ public class SecurityConfig {
 
                         CorsConfiguration configuration = new CorsConfiguration();
 
-                        configuration.setAllowedOrigins(Arrays.asList(serverUrl, "http://localhost:5173"));
-                        configuration.setAllowedMethods(Collections.singletonList("*"));
+                        configuration.setAllowedOriginPatterns(Arrays.asList(serverUrl, "http://localhost:*"));
+                        configuration.setAllowedMethods(Arrays.asList("GET","POST","PUT","PATCH","DELETE","OPTIONS"));
+                        configuration.setAllowedHeaders(Collections.singletonList("*"));
                         configuration.setExposedHeaders(Arrays.asList("Set-Cookie", "Authorization"));
                         configuration.setAllowCredentials(true);
                         configuration.setMaxAge(3600L);
@@ -81,6 +83,7 @@ public class SecurityConfig {
         // 경로별 인가 작업
         http
                 .authorizeHttpRequests((auth) -> auth
+                        .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                         .requestMatchers("/api/auth/guest").permitAll()
                         .requestMatchers("/ws/**").permitAll()
                         .anyRequest().permitAll());
