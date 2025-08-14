@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "chat_messages")
-public class ChatMessage {
+public class Chat {
     @Id
     private ObjectId id;
 

@@ -1,23 +1,23 @@
 package com.example.whereshouldwego.dto.request;
 
-import com.example.whereshouldwego.domain.ChatMessage;
+import com.example.whereshouldwego.domain.Chat;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
 
 @Getter
-public class ChatMessageRequestDto {
+public class ChatRequest {
     private Long userId;
     private String username;
     private String content;
 
-    public ChatMessage toEntity(String roomCode) {
-        return ChatMessage.builder()
+    public Chat toEntity(String roomCode, LocalDateTime createdAt) {
+        return Chat.builder()
                 .userId(userId)
                 .username(username)
                 .roomCode(roomCode)
                 .content(content)
-                .createdAt(LocalDateTime.now())
+                .createdAt(createdAt)
                 .build();
     }
 }
