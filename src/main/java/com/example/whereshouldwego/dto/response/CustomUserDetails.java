@@ -70,15 +70,15 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
         return true;
     }
 
-    public Long getId() {
-        return userDto.getId();
-    }
-
-    public String getEmail() {
-        return userDto.getEmail();
-    }
-
-    public String getImage() {
-        return userDto.getImage();
-    }
+//    public Long getId() {
+//        return userDto.getId();
+//    }
+//
+//    public String getEmail() {
+//        return userDto.getEmail();
+//    }
+//
+//    public String getImage() {
+//        return userDto.getImage();
+//    }
 }

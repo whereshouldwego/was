@@ -10,7 +10,6 @@ import java.math.BigDecimal;
 @Setter
 @AllArgsConstructor
 public class CreateFavoriteRequest {
-    private Long userId;
     private Long placeId;
     private Long kakaoPlaceId;
 

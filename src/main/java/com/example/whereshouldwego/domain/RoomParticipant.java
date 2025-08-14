@@ -34,8 +34,6 @@ public class RoomParticipant {
     @Column(nullable = false)
     private String nickname;
 
-    private String color;
-
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime participatedAt;

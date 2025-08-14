@@ -51,7 +51,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             user = User.builder()
                     .username(username)
-                    .role("ROLE_USER")
+                    .role("ROLE_MEMBER")
                     .name(oAuth2Response.getName())
                     .email(oAuth2Response.getEmail())
                     .image(oAuth2Response.getImage())
@@ -66,7 +66,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             user.updateToSocialUser(
                     username,
-                    "ROLE_USER",
+                    "ROLE_MEMBER",
                     oAuth2Response.getName(),
                     oAuth2Response.getEmail(),
                     oAuth2Response.getImage()
