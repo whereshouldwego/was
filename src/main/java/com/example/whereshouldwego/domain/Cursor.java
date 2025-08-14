@@ -9,10 +9,9 @@ import lombok.NoArgsConstructor;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class CursorMessage {
-    private Long userId;
-    private String username;
+public class Cursor {
     private String roomCode;
-    private double lat; // 위도
-    private double lng; // 경도
+    private String username;
+    private Double lat; // 위도
+    private Double lng; // 경도
 }
