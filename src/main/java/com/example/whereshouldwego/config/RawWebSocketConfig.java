@@ -11,15 +11,14 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 @Configuration
 @EnableWebSocket
 @AllArgsConstructor
-public class CursorWebSocketConfig implements WebSocketConfigurer {
+public class RawWebSocketConfig implements WebSocketConfigurer {
 
     private final CursorWebSocketHandler handler;
     private final WebSocketAuthInterceptor webSocketAuthInterceptor;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
-        registry
-                .addHandler(handler, "/ws/cursor")
+        registry.addHandler(handler, "/ws-raw/cursor")
                 .addInterceptors(webSocketAuthInterceptor)
                 .setAllowedOriginPatterns("*");
     }

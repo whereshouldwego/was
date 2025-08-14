@@ -29,9 +29,8 @@ public class CursorWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
-        roomSessions
-                .computeIfAbsent(roomCode, k -> ConcurrentHashMap.newKeySet())
-                .add(session);
+        roomSessions.computeIfAbsent(roomCode, k -> ConcurrentHashMap.newKeySet())
+                    .add(session);
 
         sessionRoomMap.put(session.getId(), roomCode);
     }

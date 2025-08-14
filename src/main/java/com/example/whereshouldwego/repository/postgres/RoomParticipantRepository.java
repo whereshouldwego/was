@@ -18,6 +18,8 @@ public interface RoomParticipantRepository extends JpaRepository<RoomParticipant
     Optional<RoomParticipant> findByRoomAndUser(Room room, User user);
     List<RoomParticipant> findAllByRoom(Room room);
 
+    boolean existsByRoomIdAndUserId(Long roomId, Long userId);
+
     @Modifying
     @Query("UPDATE RoomParticipant rp SET rp.user.id = :newUserId WHERE rp.user.id = :oldUserId")
     void updateMemberIdByGuestId(@Param("oldUserId") Long oldUserId, @Param("newUserId") Long newUserId);

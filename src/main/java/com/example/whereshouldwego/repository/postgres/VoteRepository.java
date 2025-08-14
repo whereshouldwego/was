@@ -25,6 +25,12 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
     """)
     List<Long> findVotedUserIds(Long roomId, Long placeId);
 
+    @Query("select new com.example.dto.VoteTuple(v.place.id, v.user.id) " +
+            "from Vote v " +
+            "where v.room.id = :roomId and v.place.id in :placeIds")
+    List<VoteTuple> findUserIdsByRoomIdAndPlaceIds(@Param("roomId") Long roomId,
+                                                   @Param("placeIds") List<Long> placeIds);
+
     @Modifying
     @Query("UPDATE Vote v SET v.userId = :newUserId WHERE v.userId = :oldUserId")
     void updateMemberIdByGuestId(@Param("oldUserId") Long oldUserId, @Param("newUserId") Long newUserId);
