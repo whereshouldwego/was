@@ -51,7 +51,7 @@ public class WebSocketAuthInterceptor implements HandshakeInterceptor {
             String role = jwtUtil.getRole(token);
 
             CustomUserDetails principal = new CustomUserDetails(
-                    UserDto.fromEntity(username, role, null, null, null)
+                    UserDto.fromEntity(username, role)
             );
             Authentication auth = new UsernamePasswordAuthenticationToken(
                     principal, null, principal.getAuthorities()

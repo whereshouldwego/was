@@ -5,8 +5,6 @@ import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.dto.response.KakaoResponse;
 import com.example.whereshouldwego.dto.response.OAuth2Response;
 import com.example.whereshouldwego.dto.response.UserDto;
-import com.example.whereshouldwego.jwt.JWTUtil;
-import com.example.whereshouldwego.repository.postgres.RoomParticipantRepository;
 import com.example.whereshouldwego.repository.postgres.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
@@ -59,14 +57,14 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             userRepository.save(user);
 
-            return new CustomUserDetails(UserDto.toEntity(user));
+            return new CustomUserDetails(UserDto.toEntity(username, "ROLE_MEMBER"));
         } else {
 
             user = existData.get();
 
             user.updateToSocialUser(
-                    username,
-                    "ROLE_MEMBER",
+                    user.getUsername(),
+                    user.getRole(),
                     oAuth2Response.getName(),
                     oAuth2Response.getEmail(),
                     oAuth2Response.getImage()
@@ -74,7 +72,7 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
 
             userRepository.save(user);
 
-            return new CustomUserDetails(UserDto.toEntity(user));
+            return new CustomUserDetails(UserDto.toEntity(user.getUsername(), user.getRole()));
         }
     }
 }

@@ -26,7 +26,7 @@ public class RoomParticipantService {
     private final Random random = new Random();
 
     private final List<String> nouns = Arrays.asList(
-            "유니콘", "도깨비", "스핑크스", "드래곤", "구미호", "마법사", "닌자", "연금술사", "모험가", "기사"
+            "고래", "상어", "참새", "까치", "표범", "사슴", "홍학", "수달", "기린", "여우"
     );
 
     public RoomParticipantResponse roomParticipateProcess(String roomCode, CustomUserDetails userDetails) {
@@ -72,7 +72,7 @@ public class RoomParticipantService {
 
                         // 닉네임과 색깔이 모두 사용 중이 아닐 때
                         if (!existNicknames.contains(candidateNickname)) {
-                            nickname = "익명의 " + candidateNickname;
+                            nickname = candidateNickname;
                             break;
                         }
                     }

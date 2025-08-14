@@ -72,7 +72,7 @@ public class JWTFilter extends OncePerRequestFilter {
         String role = jwtUtil.getRole(accessToken);
 
         //UserDetails에 회원 정보 객체 담기
-        CustomUserDetails userDetails = new CustomUserDetails(UserDto.fromEntity(username, role, null, null, null));
+        CustomUserDetails userDetails = new CustomUserDetails(UserDto.fromEntity(username, role));
 
         //스프링 시큐리티 인증 토큰 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
