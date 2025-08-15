@@ -37,7 +37,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getName() {
-        return userDto.getName();
+        return userDto.getUsername();
     }
 
     @Override
@@ -68,17 +68,5 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
     @Override
     public boolean isEnabled() {
         return true;
-    }
-
-    public Long getId() {
-        return userDto.getId();
-    }
-
-    public String getEmail() {
-        return userDto.getEmail();
-    }
-
-    public String getImage() {
-        return userDto.getImage();
     }
 }

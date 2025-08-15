@@ -5,6 +5,7 @@ import com.example.whereshouldwego.domain.User;
 import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.dto.request.CreateFavoriteRequest;
 import com.example.whereshouldwego.dto.response.CreateFavoriteResponse;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.repository.postgres.FavoriteRepository;
 import com.example.whereshouldwego.repository.postgres.UserRepository;
 import com.example.whereshouldwego.repository.postgres.PlaceRepository;
@@ -22,13 +23,17 @@ public class FavoriteService {
     private final PlaceRepository placeRepository;
     private final FavoriteRepository favoriteRepository;
     @Transactional
-    public CreateFavoriteResponse createFavorite(CreateFavoriteRequest request) {
-        User user = userRepository.findById(request.getUserId())
+    public CreateFavoriteResponse createFavorite(CreateFavoriteRequest request, CustomUserDetails userDetails) {
+
+        String username = userDetails.getUsername();
+
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다. "));
+
         Place place;
         if (request.getPlaceId() != null){
             Long id = request.getPlaceId();
-            place =placeRepository.findById(id)
+            place = placeRepository.findById(id)
                     .orElseGet(()->{
                         Place p = Place.builder()
                                 .id(id)
@@ -49,8 +54,8 @@ public class FavoriteService {
                                     .orElseThrow(() ->e);
                         }
                     });
-        }else{
-            if (request.getKakaoPlaceId() ==null){
+        } else {
+            if (request.getKakaoPlaceId() == null){
                 throw new IllegalArgumentException("장소 id가 누락된 잘못된 요청입니다.");
             }
             place = placeRepository.findById(request.getKakaoPlaceId())
@@ -83,10 +88,14 @@ public class FavoriteService {
     }
 
     // 특정 사용자의 찜 목록 조회
-    public List<CreateFavoriteResponse> findByUserId(Long userId){
-        User user = userRepository.findById(userId)
+    public List<CreateFavoriteResponse> findByUserId(CustomUserDetails userDetails){
+
+        String username = userDetails.getUsername();
+
+        User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("해당 사용자가 존재하지 않습니다."));
-        return favoriteRepository.findByUserId(userId)
+
+        return favoriteRepository.findByUserId(user.getId())
                 .stream()
                 .map(this::convertToDto)
                 .toList();
@@ -101,7 +110,7 @@ public class FavoriteService {
 
     // 특정 찜 정보 조회
     @Transactional
-    public void delete(Long id){
+    public void delete(Long id, CustomUserDetails userDetails){
         Favorite favorite = favoriteRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("해당 찜 정보가 존재하지 않습니다."));
 
