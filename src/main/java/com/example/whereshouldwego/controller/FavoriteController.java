@@ -4,6 +4,7 @@ import com.example.whereshouldwego.dto.request.CreateFavoriteRequest;
 import com.example.whereshouldwego.dto.response.CreateFavoriteResponse;
 import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.service.FavoriteService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -14,27 +15,31 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/favorites")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('MEMBER')")
+@RequestMapping("/api/favorites")
 public class FavoriteController {
+
     private final FavoriteService favoriteService;
 
     @PostMapping
-    public ResponseEntity<CreateFavoriteResponse> createFavorite(@RequestBody CreateFavoriteRequest request, @AuthenticationPrincipal CustomUserDetails userDetails){
-        CreateFavoriteResponse response = favoriteService.createFavorite(request, userDetails);
-        return ResponseEntity.status(201).body(response);
+    public ResponseEntity<CreateFavoriteResponse> createFavorite(@RequestBody @Valid CreateFavoriteRequest request,
+                                                                 @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        CreateFavoriteResponse response = favoriteService.createFavorite(request, user.getUsername());
+        return ResponseEntity.status(HttpStatus.CREATED).body(response);
     }
 
     @GetMapping
-    public ResponseEntity<List<CreateFavoriteResponse>> findByUserId(@AuthenticationPrincipal CustomUserDetails userDetails){
-        return ResponseEntity.ok(favoriteService.findByUserId(userDetails));
+    public ResponseEntity<List<CreateFavoriteResponse>> findMyFavorites(@AuthenticationPrincipal CustomUserDetails user) {
+        return ResponseEntity.ok(favoriteService.findMyFavorites(user.getUsername()));
     }
 
     @DeleteMapping("/{favoriteId}")
-    public ResponseEntity<Void> deleteFavorite(@PathVariable("favoriteId") Long favoriteId, @AuthenticationPrincipal CustomUserDetails userDetails){
-        favoriteService.delete(favoriteId, userDetails);
-        return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+    public ResponseEntity<Void> deleteFavorite(@PathVariable Long favoriteId,
+                                               @AuthenticationPrincipal CustomUserDetails user
+    ) {
+        favoriteService.deleteFavorite(favoriteId, user.getUsername());
+        return ResponseEntity.noContent().build();
     }
-
 }

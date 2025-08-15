@@ -9,8 +9,8 @@ import org.bson.types.ObjectId;
 import java.time.LocalDateTime;
 
 @Getter
-@AllArgsConstructor
 @Builder
+@AllArgsConstructor
 public class ChatResponse {
     private String id;
     private Long userId;

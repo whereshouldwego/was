@@ -55,13 +55,10 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     .image(oAuth2Response.getImage())
                     .build();
 
-            userRepository.save(user);
+            user = userRepository.save(user);
 
-            return new CustomUserDetails(UserDto.toEntity(username, "ROLE_MEMBER"));
         } else {
-
             user = existData.get();
-
             user.updateToSocialUser(
                     user.getUsername(),
                     user.getRole(),
@@ -69,10 +66,8 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
                     oAuth2Response.getEmail(),
                     oAuth2Response.getImage()
             );
-
-            userRepository.save(user);
-
-            return new CustomUserDetails(UserDto.toEntity(user.getUsername(), user.getRole()));
         }
+
+        return new CustomUserDetails(UserDto.of(user.getUsername(), user.getRole()));
     }
 }

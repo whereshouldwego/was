@@ -57,12 +57,8 @@ public class RawWebSocketAuthInterceptor implements HandshakeInterceptor {
             String username = jwtUtil.getUsername(token);
             String role = jwtUtil.getRole(token);
 
-            CustomUserDetails principal = new CustomUserDetails(
-                    UserDto.fromEntity(username, role)
-            );
-            Authentication auth = new UsernamePasswordAuthenticationToken(
-                    principal, null, principal.getAuthorities()
-            );
+            CustomUserDetails principal = new CustomUserDetails(UserDto.of(username, role));
+            Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
 
             attributes.put(ATTR_ROOM_CODE, roomCode);
             attributes.put(ATTR_AUTH, auth);

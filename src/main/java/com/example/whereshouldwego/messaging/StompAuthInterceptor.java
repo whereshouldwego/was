@@ -36,7 +36,7 @@ public class StompAuthInterceptor implements ChannelInterceptor {
             String username = jwtUtil.getUsername(token);
             String role = jwtUtil.getRole(token);
 
-            CustomUserDetails principal = new CustomUserDetails(UserDto.fromEntity(username, role));
+            CustomUserDetails principal = new CustomUserDetails(UserDto.of(username, role));
 
             Authentication auth = new UsernamePasswordAuthenticationToken(principal, null, principal.getAuthorities());
 
