@@ -1,10 +1,11 @@
 package com.example.whereshouldwego.dto.response;
 
-import com.example.whereshouldwego.domain.Candidate;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+
+import java.util.List;
 
 @Getter
 @Builder
@@ -12,18 +13,12 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class CandidateResponse {
     private String roomCode;
-    private PlaceResponse place;
-    private int voteCount;
+    private List<CandidateItemResponse> candidates;
 
-    public static CandidateResponse of(String roomCode, PlaceResponse place, int voteCount) {
+    public static CandidateResponse of(String roomCode, List<CandidateItemResponse> items) {
         return CandidateResponse.builder()
                 .roomCode(roomCode)
-                .place(place)
-                .voteCount(voteCount)
+                .candidates(items)
                 .build();
-    }
-
-    public static CandidateResponse from(Candidate candidate, String roomCode, PlaceResponse place, int voteCount) {
-        return of(roomCode, place, voteCount);
     }
 }

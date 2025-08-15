@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -26,16 +28,16 @@ public class CandidateController {
     private final CandidateService candidateService;
 
     @MessageMapping("/candidate.{roomCode}")
-    public void handleCandidateMessage(@Valid CandidateRequest request,
-                                       @AuthenticationPrincipal CustomUserDetails userDetails,
+    public void handleCandidateMessage(@Valid @Payload CandidateRequest request,
+                                       Authentication authentication,
                                        @DestinationVariable String roomCode
     ) {
-        List<CandidateResponse> response = candidateService.handleAndBroadcast(request, userDetails, roomCode);
+        CandidateResponse response = candidateService.handleCandidates(request, authentication, roomCode);
         candidateService.broadcastCandidates(roomCode, response);
     }
 
     @GetMapping("/history/{roomCode}")
-    public ResponseEntity<List<CandidateResponse>> getCandidateHistory(@PathVariable String roomCode) {
+    public ResponseEntity<CandidateResponse> getCandidateHistory(@PathVariable String roomCode) {
         return ResponseEntity.ok(candidateService.getCandidateHistory(roomCode));
     }
 }

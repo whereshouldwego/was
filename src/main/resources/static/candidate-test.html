@@ -10,9 +10,9 @@
 <h2>WebSocket Candidate Test</h2>
 
 <div>
+    <label>JWT Token: <input type="text" id="token" placeholder="Bearer 토큰 입력" style="width:400px;"></label><br><br>
     <label>Room Code: <input type="text" id="roomCode" value="1234"></label><br><br>
     <label>Place ID: <input type="number" id="placeId" value="1"></label><br><br>
-    <label>User ID: <input type="number" id="userId" value="101"></label><br><br>
     <label>Action Type:
         <select id="actionType">
             <option value="ADD_PLACE">ADD_PLACE</option>
@@ -34,44 +34,46 @@
 <script>
     let stompClient = null;
 
-    function logMessage(message) {
-        const log = document.getElementById("log");
-        log.textContent += message + "\n";
-    }
+    function log(m){ document.getElementById("log").textContent += m + "\n"; }
 
     function connect() {
-        // 같은 포트에서 제공되므로 절대 URL이 아닌 /ws만 사용
-        const socket = new SockJS("/ws");
+        const token = document.getElementById("token").value
+        if (!token) { alert("JWT 토큰을 입력하세요."); return; }
+
+        const roomCode = document.getElementById("roomCode").value.trim();
+        if (!roomCode) { alert("Room Code를 입력하세요."); return; }
+
+        // ✅ 서버와 동일
+        const socket = new SockJS("/ws-stomp");
         stompClient = Stomp.over(socket);
 
-        const roomCode = document.getElementById("roomCode").value;
-
-        stompClient.connect({}, () => {
-            logMessage("✅ Connected to WebSocket");
-
-            stompClient.subscribe(`/topic/candidate.${roomCode}`, (message) => {
-                logMessage("📩 Received: " + message.body);
-            });
-
-            logMessage(`📡 Subscribed to /topic/candidate.${roomCode}`);
-        });
+        stompClient.connect(
+            { Authorization: token },
+            () => {
+                log("✅ Connected to WebSocket");
+                // ✅ 브로커 프리픽스로 구독
+                stompClient.subscribe(`/topic/candidate.${roomCode}`, (msg) => {
+                    log("📩 Received: " + msg.body);
+                });
+                log(`📡 Subscribed to /topic/candidate.${roomCode}`);
+            },
+            (err) => log("❌ Connection failed: " + err)
+        );
     }
 
     function sendMessage() {
-        const roomCode = document.getElementById("roomCode").value;
-        const placeId = document.getElementById("placeId").value;
-        const userId = document.getElementById("userId").value;
+        if (!stompClient || !stompClient.connected) {
+            alert("먼저 WebSocket에 연결하세요"); return;
+        }
+        const roomCode = document.getElementById("roomCode").value.trim();
+        const placeId = Number(document.getElementById("placeId").value);
         const actionType = document.getElementById("actionType").value;
 
-        const payload = {
-            placeId: Number(placeId),
-            userId: Number(userId),
-            actionType: actionType
-        };
+        const payload = { placeId, actionType };
 
-        // @MessageMapping("/candidate.{roomCode}")에 매핑됨
-        stompClient.send(`/ws/candidate.${roomCode}`, {}, JSON.stringify(payload));
-        logMessage(`📤 Sent: ` + JSON.stringify(payload));
+        // ✅ 앱 프리픽스 붙여서 전송
+        stompClient.send(`/app/candidate.${roomCode}`, {}, JSON.stringify(payload));
+        log(`📤 Sent: ${JSON.stringify(payload)}`);
     }
 </script>
 </body>

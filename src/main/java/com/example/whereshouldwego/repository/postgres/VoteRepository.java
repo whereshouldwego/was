@@ -7,21 +7,12 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
-import java.util.List;
-
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Long> {
 
-    void deleteByRoomIdAndUserIdAndPlaceId(Long roomId, Long userId, Long placeId);
-
     void deleteByRoomIdAndPlaceId(Long roomId, Long placeId);
 
-    @Query("""
-        SELECT v.userId 
-        FROM Vote v 
-        WHERE v.roomId = :roomId AND v.placeId = :placeId
-    """)
-    List<Long> findVotedUserIds(Long roomId, Long placeId);
+    void deleteByRoomIdAndUserIdAndPlaceId(Long roomId, Long userId, Long placeId);
 
     @Modifying
     @Query("UPDATE Vote v SET v.userId = :newUserId WHERE v.userId = :oldUserId")

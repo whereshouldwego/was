@@ -1,9 +1,6 @@
 package com.example.whereshouldwego.domain;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
+import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
@@ -13,11 +10,13 @@ import lombok.*;
 @AllArgsConstructor
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Candidate {
-
-    @Id
-    @GeneratedValue
+    @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
+    @Column(name = "room_id",  nullable = false)
     private Long roomId;
+
+    @Column(name = "place_id", nullable = false)
     private Long placeId;
 
     public static Candidate of(long roomId, long placeId) {

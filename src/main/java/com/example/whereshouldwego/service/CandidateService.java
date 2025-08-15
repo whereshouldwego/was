@@ -4,6 +4,7 @@ import com.example.whereshouldwego.domain.Candidate;
 import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.domain.Vote;
 import com.example.whereshouldwego.dto.request.CandidateRequest;
+import com.example.whereshouldwego.dto.response.CandidateItemResponse;
 import com.example.whereshouldwego.dto.response.CandidateResponse;
 import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.dto.response.PlaceResponse;
@@ -14,7 +15,7 @@ import com.example.whereshouldwego.repository.postgres.VoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
-import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -31,78 +32,77 @@ public class CandidateService {
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
     private final VoteRepository voteRepository;
-    private final RoomParticipantRepository roomParticipantRepository;
 
-    @Transactional(readOnly = true)
-    public List<CandidateResponse> handleAndBroadcast(
+    @Transactional
+    public CandidateResponse handleCandidates(
             CandidateRequest request,
-            CustomUserDetails user,
+            Authentication authentication,
             String roomCode
     ) {
         Long roomId = decode(roomCode);
-        Long userId = userRepository.findIdByUsername(user.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
-        
-        // 권한 확인
-        if (!roomParticipantRepository.existsByRoomIdAndUserId(roomId, userId)) {
-            throw new AccessDeniedException("User is not a member of the room");
-        }
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        String jwtUsername = principal.getUsername();
+
+        Long userId = userRepository.findIdByUsername(jwtUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + jwtUsername));
+
+//        if (!roomParticipantRepository.existsByRoomIdAndUserId(roomId, userId)) {
+//            throw new AccessDeniedException("User is not a member of the room");
+//        }
 
         // 행위 처리
         switch (request.getActionType()) {
-            case ADD_PLACE -> addPlaceIfAbsent(roomId, request);
-            case REMOVE_PLACE -> removePlaceAndVotes(roomId, request);
-            case ADD_VOTE -> addVoteIfAbsent(roomId, userId, request);
-            case REMOVE_VOTE -> removeVote(roomId, userId, request);
+            case ADD_PLACE -> addPlaceIfAbsent(roomId, request.getPlaceId());
+            case REMOVE_PLACE -> removePlaceAndVotes(roomId, request.getPlaceId());
+            case ADD_VOTE -> addVoteIfAbsent(roomId, userId, request.getPlaceId());
+            case REMOVE_VOTE -> removeVote(roomId, userId, request.getPlaceId());
         }
 
         return getCandidatesSortedByVotes(roomId, roomCode);
     }
 
-    public void broadcastCandidates(String roomCode, List<CandidateResponse> response) {
+    public void broadcastCandidates(String roomCode, CandidateResponse response) {
         messagingTemplate.convertAndSend("/topic/candidate." + roomCode, response);
     }
 
-    public List<CandidateResponse> getCandidatesSortedByVotes(Long roomId, String roomCode) {
+    public CandidateResponse getCandidatesSortedByVotes(Long roomId, String roomCode) {
         List<Object[]> rows = candidateRepository.findPlacesWithVoteCountFetchJoin(roomId);
-        return rows.stream()
-                .map(r -> CandidateResponse.of(
-                        roomCode,
+        List<CandidateItemResponse> items = rows.stream()
+                .map(r -> CandidateItemResponse.of(
                         PlaceResponse.fromEntity((Place) r[0]),
                         ((Number) r[1]).intValue()
                 ))
                 .toList();
+        return CandidateResponse.of(roomCode, items);
     }
 
-    private void addPlaceIfAbsent(Long roomId, CandidateRequest request) {
+    private void addPlaceIfAbsent(Long roomId, Long placeId) {
         try {
-            Candidate entity = Candidate.of(roomId, request.getPlaceId());
-            candidateRepository.save(entity);
+            candidateRepository.save(Candidate.of(roomId, placeId));
         } catch (DataIntegrityViolationException ignore) {
         }
     }
 
-    private void removePlaceAndVotes(Long roomId, CandidateRequest request) {
-        candidateRepository.deleteByRoomIdAndPlaceId(roomId, request.getPlaceId());
-        voteRepository.deleteByRoomIdAndPlaceId(roomId, request.getPlaceId());
+    private void removePlaceAndVotes(Long roomId, Long placeId) {
+        voteRepository.deleteByRoomIdAndPlaceId(roomId, placeId);
+        candidateRepository.deleteByRoomIdAndPlaceId(roomId, placeId);
     }
 
-    private void addVoteIfAbsent(Long roomId, Long userId, CandidateRequest request) {
+    private void addVoteIfAbsent(Long roomId, Long userId, Long placeId) {
+        if (!candidateRepository.existsByRoomIdAndPlaceId(roomId, placeId)) {
+            return;
+        }
         try {
-            voteRepository.save(Vote.builder()
-                    .roomId(roomId)
-                    .userId(userId)
-                    .placeId(request.getPlaceId())
-                    .build());
+            voteRepository.save(Vote.of(roomId, userId, placeId));
         } catch (DataIntegrityViolationException ignore) {
         }
     }
 
-    private void removeVote(Long roomId, Long userId, CandidateRequest request) {
-        voteRepository.deleteByRoomIdAndUserIdAndPlaceId(roomId, userId, request.getPlaceId());
+    private void removeVote(Long roomId, Long userId, Long placeId) {
+        voteRepository.deleteByRoomIdAndUserIdAndPlaceId(roomId, userId, placeId);
     }
 
-    public List<CandidateResponse> getCandidateHistory(String roomCode) {
+    public CandidateResponse getCandidateHistory(String roomCode) {
         Long roomId = decode(roomCode);
         return getCandidatesSortedByVotes(roomId, roomCode);
     }
