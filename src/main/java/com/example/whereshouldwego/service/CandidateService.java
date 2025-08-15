@@ -15,6 +15,7 @@ import com.example.whereshouldwego.repository.postgres.VoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class CandidateService {
     private final UserRepository userRepository;
     private final CandidateRepository candidateRepository;
     private final VoteRepository voteRepository;
+    private final RoomParticipantRepository roomParticipantRepository;
 
     @Transactional
     public CandidateResponse handleCandidates(
@@ -46,9 +48,9 @@ public class CandidateService {
         Long userId = userRepository.findIdByUsername(jwtUsername)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + jwtUsername));
 
-//        if (!roomParticipantRepository.existsByRoomIdAndUserId(roomId, userId)) {
-//            throw new AccessDeniedException("User is not a member of the room");
-//        }
+        if (!roomParticipantRepository.existsByRoomIdAndUserId(roomId, userId)) {
+            throw new AccessDeniedException("User is not a member of the room");
+        }
 
         // 행위 처리
         switch (request.getActionType()) {
