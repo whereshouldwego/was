@@ -8,6 +8,7 @@ import com.example.whereshouldwego.repository.mongo.ChatRepository;
 import com.example.whereshouldwego.repository.postgres.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -22,11 +23,14 @@ public class ChatService {
     private final ChatRepository chatRepository;
     private final UserRepository userRepository;
 
-    public void handleAndBroadcast(ChatRequest request, CustomUserDetails user, String roomCode) {
-        Long userId = userRepository.findIdByUsername(user.getName())
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public void handleAndBroadcast(ChatRequest request, Authentication authentication, String roomCode) {
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        String jwtUsername = principal.getUsername();
 
-        Chat chat = Chat.of(userId, user.getUsername(), roomCode, request.getContent(), LocalDateTime.now());
+        Long userId = userRepository.findIdByUsername(jwtUsername)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found: " + jwtUsername));
+
+        Chat chat = Chat.of(userId, request.getUsername(), roomCode, request.getContent(), LocalDateTime.now());
         Chat saved = chatRepository.save(chat);
         messagingTemplate.convertAndSend("/topic/chat." + roomCode, ChatResponse.from(saved));
     }

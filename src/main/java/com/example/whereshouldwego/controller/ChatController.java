@@ -9,6 +9,8 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.messaging.handler.annotation.Payload;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,11 +27,11 @@ public class ChatController {
     private final ChatService chatService;
 
     @MessageMapping("/chat.{roomCode}")
-    public void handleChatMessage(@Valid ChatRequest request,
-                                  @AuthenticationPrincipal CustomUserDetails user,
+    public void handleChatMessage(@Valid @Payload ChatRequest request,
+                                  Authentication authentication,
                                   @DestinationVariable String roomCode
     ) {
-        chatService.handleAndBroadcast(request, user, roomCode);
+        chatService.handleAndBroadcast(request, authentication, roomCode);
     }
 
     @GetMapping("/{roomCode}/history")

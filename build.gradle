@@ -33,12 +33,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
-	// STOMP Broker(RabbitMQ)
-	implementation 'io.projectreactor.netty:reactor-netty-core:1.1.12'
-	implementation 'io.projectreactor.netty:reactor-netty:1.1.13'
-
 	// Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
+	implementation 'org.springframework.security:spring-security-messaging'
 
 	//OAuth2
 	implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
@@ -51,7 +48,6 @@ dependencies {
 	// Database
 	implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 	implementation 'org.springframework.boot:spring-boot-starter-data-mongodb'
-	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.postgresql:postgresql:42.7.3'
 
 	// Tools

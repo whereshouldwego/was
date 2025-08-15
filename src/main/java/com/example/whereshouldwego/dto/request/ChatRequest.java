@@ -7,6 +7,6 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 public class ChatRequest {
-    @NotBlank
-    private String content;
+    @NotBlank private String username;
+    @NotBlank private String content;
 }

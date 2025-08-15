@@ -13,10 +13,8 @@ import java.time.LocalDateTime;
 @Document(collection = "chat_messages")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Chat {
-
     @Id
     private ObjectId id;
-
     private Long userId;
     private String username;
     private String roomCode;

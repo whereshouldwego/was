@@ -7,9 +7,12 @@
 <body>
 <h2>실시간 채팅</h2>
 
+<!-- 토큰 입력 -->
+<input type="text" id="tokenInput" placeholder="JWT 토큰을 입력하세요" size="80"><br><br>
+
 <!-- 사용자 입력 영역 -->
-<input type="number" id="userId" placeholder="유저 ID (숫자만)">
 <input type="text" id="roomId" placeholder="채팅방 코드">
+<input type="text" id="displayName" placeholder="채팅방에서 사용할 별명">
 <button onclick="connect()">채팅 연결</button>
 
 <!-- 채팅 영역 -->
@@ -25,81 +28,129 @@
 <script>
     let stompClient = null;
     let subscription = null;
+    let token = null;
+
+    // 엔터키로 전송
+    document.getElementById('messageInput').addEventListener('keydown', e => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
 
     async function connect() {
+        const rawToken = document.getElementById('tokenInput').value.trim();
         const roomId = document.getElementById('roomId').value.trim();
-        if (!roomId) {
-            alert("채팅방 코드를 입력하세요.");
-            return;
-        }
+        const displayName = document.getElementById('displayName').value.trim();
+
+        if (!rawToken) return alert("JWT 토큰을 입력하세요.");
+        if (!roomId) return alert("채팅방 코드를 입력하세요.");
+        if (!displayName) return alert("별명을 입력하세요.");
+
+        token = ensureBearer(rawToken);
 
         document.getElementById('chat').value = '';
+        await loadHistory(roomId);
 
-        try {
-            const res = await fetch('/api/chat/history/' + roomId);
-            if (res.ok) {
-                const messages = await res.json();
-                messages.forEach(msg => {
-                    const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
-                    document.getElementById('chat').value += display;
-                });
-            } else {
-                console.warn("이전 메시지를 불러오지 못했습니다.");
-            }
-        } catch (e) {
-            console.error("채팅 기록 요청 실패:", e);
-        }
-
-        if (stompClient !== null && stompClient.connected) {
+        if (stompClient && stompClient.connected) {
             if (subscription) {
                 subscription.unsubscribe();
-                console.log("이전 구독 해제됨.");
+                subscription = null;
             }
             stompClient.disconnect(() => {
-                console.log("기존 연결 종료됨.");
-                connectStomp(roomId); // 재연결
+                console.log("기존 STOMP 연결 종료");
+                connectStomp(roomId);
             });
         } else {
             connectStomp(roomId);
         }
     }
 
-    function connectStomp(roomId) {
-        const token = "Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IGJlNDhkZmM5LTFmMDEtNGJjNS1iM2UyLWExZDZkMDE4NGY0NCIsInJvbGUiOiJST0xFX0dVRVNUIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJpYXQiOjE3NTQ5ODMxMDIsImV4cCI6MTc1NDk4NjcwMn0.mmE6uq5x61Nt_PpQB3JrkmfgiADcb0MPmug8dyiJ1sM";
+    function ensureBearer(t) {
+        return t.toLowerCase().startsWith('bearer ') ? t : `Bearer ${t}`;
+    }
 
-        const socket = new SockJS('/ws');
+    async function loadHistory(roomId) {
+        try {
+            const res = await fetch('/api/chats/' + encodeURIComponent(roomId) + '/history', {
+                headers: { 'Authorization': token }
+            });
+            if (res.ok) {
+                const messages = await res.json();
+                messages.forEach(addMessageLineFromResponse);
+            } else {
+                console.warn("이전 메시지를 불러오지 못했습니다.", res.status);
+            }
+        } catch (e) {
+            console.error("채팅 기록 요청 실패:", e);
+        }
+    }
+
+    function connectStomp(roomId) {
+        const socket = new SockJS('/ws-stomp');
         stompClient = Stomp.over(socket);
+        // 필요 시 디버그 로그 끄기
+        // stompClient.debug = null;
 
         stompClient.connect(
-            { Authorization: token }, // ★ 토큰을 CONNECT 프레임에 실어 전송
+            { Authorization: token }, // CONNECT 프레임에 토큰 전송
             function () {
-                subscription = stompClient.subscribe('/topic/chat.' + roomId, function (message) {
-                    const msg = JSON.parse(message.body);
-                    const display = `[${msg.createdAt}] 👤유저 ${msg.userId}: ${msg.content}\n`;
-                    document.getElementById('chat').value += display;
+                subscription = stompClient.subscribe('/topic/chat.' + roomId, function (frame) {
+                    try {
+                        const msg = JSON.parse(frame.body);
+                        addMessageLineFromResponse(msg);
+                    } catch (e) {
+                        console.error("수신 파싱 실패:", e, frame.body);
+                    }
                 });
-                console.log(`채팅방 "/topic/chat.${roomId}"에 연결됨`);
+                console.log(`구독 성공: /topic/chat.${roomId}`);
             },
             function (error) {
                 console.error("STOMP 연결 실패:", error);
-                alert("WebSocket 연결 실패: " + error);
+                alert("WebSocket 연결 실패");
             }
         );
     }
 
+    function addMessageLineFromResponse(msg) {
+        // ChatResponse: {id, userId, username(=별명), roomCode, content, createdAt}
+        const who = msg.username || (msg.userId != null ? `유저 ${msg.userId}` : '알수없음');
+        const time = formatTime(msg.createdAt);
+        document.getElementById('chat').value += `[${time}] 👤${who}: ${msg.content}\n`;
+    }
+
+    function formatTime(v) {
+        try {
+            const d = new Date(v);
+            if (!isNaN(d.getTime())) {
+                return new Intl.DateTimeFormat('ko-KR', {
+                    year: '2-digit', month: '2-digit', day: '2-digit',
+                    hour: '2-digit', minute: '2-digit', second: '2-digit'
+                }).format(d);
+            }
+            return v ?? '';
+        } catch {
+            return v ?? '';
+        }
+    }
+
     function sendMessage() {
-        const userId = parseInt(document.getElementById('userId').value);
         const roomId = document.getElementById('roomId').value.trim();
         const content = document.getElementById('messageInput').value.trim();
+        const displayName = document.getElementById('displayName').value.trim();
 
-        if (!roomId || isNaN(userId) || !content) {
-            alert("유저 ID, 채팅방 코드, 메시지를 모두 입력하세요.");
-            return;
+        if (!roomId || !content) {
+            return alert("채팅방 코드와 메시지를 모두 입력하세요.");
+        }
+        if (!stompClient || !stompClient.connected) {
+            return alert("먼저 채팅에 연결하세요.");
         }
 
-        stompClient.send(`/ws/chat.${roomId}`, {}, JSON.stringify({
-            userId: userId,
-            roomCode: roomId,
+        // 서버 @MessageMapping("/chat.{roomCode}") + prefix "/app"
+        // → /app/chat.{roomCode} 로 전송
+        // 바디는 별명 + 내용 (실제 userId는 서버가 JWT로 식별)
+        stompClient.send(`/app/chat.${roomId}`, {}, JSON.stringify({
+            username: displayName,
             content: content
         }));
 
