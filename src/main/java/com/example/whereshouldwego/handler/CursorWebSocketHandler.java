@@ -1,6 +1,5 @@
 package com.example.whereshouldwego.handler;
 
-import com.example.whereshouldwego.domain.Cursor;
 import com.example.whereshouldwego.dto.request.CursorRequest;
 import com.example.whereshouldwego.dto.response.CursorResponse;
 import com.example.whereshouldwego.dto.response.CustomUserDetails;
@@ -20,8 +19,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.example.whereshouldwego.messaging.WebSocketAuthInterceptor.ATTR_AUTH;
-import static com.example.whereshouldwego.messaging.WebSocketAuthInterceptor.ATTR_ROOM_CODE;
+import static com.example.whereshouldwego.messaging.RawWebSocketAuthInterceptor.ATTR_AUTH;
+import static com.example.whereshouldwego.messaging.RawWebSocketAuthInterceptor.ATTR_ROOM_CODE;
 
 @Component
 @RequiredArgsConstructor

@@ -1,12 +1,16 @@
 package com.example.whereshouldwego.service;
 
+import com.example.whereshouldwego.domain.Candidate;
 import com.example.whereshouldwego.domain.Place;
 import com.example.whereshouldwego.domain.Vote;
 import com.example.whereshouldwego.dto.request.CandidateRequest;
 import com.example.whereshouldwego.dto.response.CandidateResponse;
 import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.dto.response.PlaceResponse;
-import com.example.whereshouldwego.repository.postgres.*;
+import com.example.whereshouldwego.mapper.CandidateMapper;
+import com.example.whereshouldwego.repository.postgres.CandidateRepository;
+import com.example.whereshouldwego.repository.postgres.RoomParticipantRepository;
+import com.example.whereshouldwego.repository.postgres.VoteRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -27,24 +31,26 @@ public class CandidateService {
     private final VoteRepository voteRepository;
     private final RoomParticipantRepository roomParticipantRepository;
 
-    @Transactional
-    public List<CandidateResponse> handleIncomingCandidate(CandidateRequest dto,
-                                        CustomUserDetails userDetails,
-                                        String roomCode
+    @Transactional(readOnly = true)
+    public List<CandidateResponse> handleAndBroadcast(
+            CandidateRequest req,
+            CustomUserDetails user,
+            String roomCode
     ) {
         Long roomId = decode(roomCode);
-        Long userId = userDetails.getId();
-
+        Long userId = user.getId();
+        
+        // 권한 확인
         if (!roomParticipantRepository.existsByRoomIdAndUserId(roomId, userId)) {
             throw new AccessDeniedException("User is not a member of the room");
         }
 
-        switch (dto.getActionType()) {
-            case ADD_PLACE -> savePlaceIfNotExists(roomId, dto);
-            case REMOVE_PLACE -> removePlace(roomId, dto);
-            case ADD_VOTE -> saveVoteIfNotExists(roomId, userId, dto);
-            case REMOVE_VOTE -> removeVote(roomId, userId, dto);
-            default -> throw new IllegalArgumentException("Unknown actionType: " + dto.getActionType());
+        // 행위 처리
+        switch (req.getActionType()) {
+            case ADD_PLACE -> addPlaceIfAbsent(roomId, req);
+            case REMOVE_PLACE -> removePlaceAndVotes(roomId, req);
+            case ADD_VOTE -> addVoteIfAbsent(roomId, userId, req);
+            case REMOVE_VOTE -> removeVote(roomId, userId, req);
         }
 
         return getCandidatesSortedByVotes(roomId, roomCode);
@@ -57,7 +63,7 @@ public class CandidateService {
     public List<CandidateResponse> getCandidatesSortedByVotes(Long roomId, String roomCode) {
         List<Object[]> rows = candidateRepository.findPlacesWithVoteCountFetchJoin(roomId);
         return rows.stream()
-                .map(r -> CandidateResponse.fromEntity(
+                .map(r -> CandidateResponse.of(
                         roomCode,
                         PlaceResponse.fromEntity((Place) r[0]),
                         ((Number) r[1]).intValue()
@@ -65,33 +71,32 @@ public class CandidateService {
                 .toList();
     }
 
-    private void savePlaceIfNotExists(Long roomId, CandidateRequest dto) {
+    private void addPlaceIfAbsent(Long roomId, CandidateRequest req) {
         try {
-            candidateRepository.save(dto.toEntity(roomId));
+            Candidate entity = CandidateMapper.toEntity(req, roomId); // Candidate.of(roomId, req.getPlaceId())
+            candidateRepository.save(entity);
         } catch (DataIntegrityViolationException ignore) {
-            // 이미 존재하는 경우 무시
         }
     }
 
-    private void removePlace(Long roomId, CandidateRequest dto) {
-        candidateRepository.deleteByRoomIdAndPlaceId(roomId, dto.getPlaceId());
-        voteRepository.deleteByRoomIdAndPlaceId(roomId, dto.getPlaceId());
+    private void removePlaceAndVotes(Long roomId, CandidateRequest req) {
+        candidateRepository.deleteByRoomIdAndPlaceId(roomId, req.getPlaceId());
+        voteRepository.deleteByRoomIdAndPlaceId(roomId, req.getPlaceId());
     }
 
-    private void saveVoteIfNotExists(Long roomId, Long userId, CandidateRequest dto) {
+    private void addVoteIfAbsent(Long roomId, Long userId, CandidateRequest req) {
         try {
             voteRepository.save(Vote.builder()
                     .roomId(roomId)
                     .userId(userId)
-                    .placeId(dto.getPlaceId())
+                    .placeId(req.getPlaceId())
                     .build());
         } catch (DataIntegrityViolationException ignore) {
-            // 이미 투표한 경우 무시
         }
     }
 
-    private void removeVote(Long roomId, Long userId, CandidateRequest dto) {
-        voteRepository.deleteByRoomIdAndUserIdAndPlaceId(roomId, userId, dto.getPlaceId());
+    private void removeVote(Long roomId, Long userId, CandidateRequest req) {
+        voteRepository.deleteByRoomIdAndUserIdAndPlaceId(roomId, userId, req.getPlaceId());
     }
 
     public List<CandidateResponse> getCandidateHistory(String roomCode) {

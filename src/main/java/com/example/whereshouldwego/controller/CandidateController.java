@@ -28,8 +28,9 @@ public class CandidateController {
     @MessageMapping("/candidate.{roomCode}")
     public void handleCandidateMessage(@Valid CandidateRequest request,
                                        @AuthenticationPrincipal CustomUserDetails userDetails,
-                                       @DestinationVariable String roomCode) {
-        List<CandidateResponse> response = candidateService.handleIncomingCandidate(request, userDetails, roomCode);
+                                       @DestinationVariable String roomCode
+    ) {
+        List<CandidateResponse> response = candidateService.handleAndBroadcast(request, userDetails, roomCode);
         candidateService.broadcastCandidates(roomCode, response);
     }
 

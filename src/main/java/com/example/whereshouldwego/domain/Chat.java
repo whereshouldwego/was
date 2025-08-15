@@ -1,21 +1,19 @@
 package com.example.whereshouldwego.domain;
 
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
+import org.bson.types.ObjectId;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
 
 @Getter
 @Builder
-@NoArgsConstructor
 @AllArgsConstructor
 @Document(collection = "chat_messages")
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Chat {
+
     @Id
     private ObjectId id;
 
@@ -24,4 +22,14 @@ public class Chat {
     private String roomCode;
     private String content;
     private LocalDateTime createdAt;
+
+    public static Chat of(Long userId, String username, String roomCode, String content, LocalDateTime createdAt) {
+        return Chat.builder()
+                .userId(userId)
+                .username(username)
+                .roomCode(roomCode)
+                .content(content)
+                .createdAt(createdAt)
+                .build();
+    }
 }

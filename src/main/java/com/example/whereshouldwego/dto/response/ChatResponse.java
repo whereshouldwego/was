@@ -4,6 +4,7 @@ import com.example.whereshouldwego.domain.Chat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
+import org.bson.types.ObjectId;
 
 import java.time.LocalDateTime;
 
@@ -18,9 +19,10 @@ public class ChatResponse {
     private String content;
     private LocalDateTime createdAt;
 
-    public static ChatResponse fromEntity(Chat chat) {
+    public static ChatResponse from(Chat chat) {
+        ObjectId oid = chat.getId();
         return ChatResponse.builder()
-                .id(String.valueOf(chat.getId()))
+                .id(oid != null ? oid.toHexString() : null)
                 .userId(chat.getUserId())
                 .username(chat.getUsername())
                 .roomCode(chat.getRoomCode())

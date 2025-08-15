@@ -1,23 +1,12 @@
 package com.example.whereshouldwego.dto.request;
 
-import com.example.whereshouldwego.domain.Chat;
+import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;
-
-import java.time.LocalDateTime;
+import lombok.NoArgsConstructor;
 
 @Getter
+@NoArgsConstructor
 public class ChatRequest {
-    private Long userId;
-    private String username;
+    @NotBlank
     private String content;
-
-    public Chat toEntity(String roomCode, LocalDateTime createdAt) {
-        return Chat.builder()
-                .userId(userId)
-                .username(username)
-                .roomCode(roomCode)
-                .content(content)
-                .createdAt(createdAt)
-                .build();
-    }
 }

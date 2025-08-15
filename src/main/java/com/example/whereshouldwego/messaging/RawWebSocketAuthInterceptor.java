@@ -20,7 +20,7 @@ import java.util.Map;
 
 @Component
 @RequiredArgsConstructor
-public class WebSocketAuthInterceptor implements HandshakeInterceptor {
+public class RawWebSocketAuthInterceptor implements HandshakeInterceptor {
 
     public static final String ATTR_ROOM_CODE = "roomCode";
     public static final String ATTR_AUTH = "auth";

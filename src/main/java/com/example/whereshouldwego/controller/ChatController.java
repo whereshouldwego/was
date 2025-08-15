@@ -2,12 +2,14 @@ package com.example.whereshouldwego.controller;
 
 import com.example.whereshouldwego.dto.request.ChatRequest;
 import com.example.whereshouldwego.dto.response.ChatResponse;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.service.ChatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -23,10 +25,11 @@ public class ChatController {
     private final ChatService chatService;
 
     @MessageMapping("/chat.{roomCode}")
-    public void handleChatMessage(@Valid ChatRequest message,
+    public void handleChatMessage(@Valid ChatRequest request,
+                                  @AuthenticationPrincipal CustomUserDetails user,
                                   @DestinationVariable String roomCode
     ) {
-        chatService.handleIncomingChat(message, roomCode);
+        chatService.handleAndBroadcast(request, user, roomCode);
     }
 
     @GetMapping("/{roomCode}/history")

@@ -1,7 +1,7 @@
 package com.example.whereshouldwego.config;
 
 import com.example.whereshouldwego.handler.CursorWebSocketHandler;
-import com.example.whereshouldwego.messaging.WebSocketAuthInterceptor;
+import com.example.whereshouldwego.messaging.RawWebSocketAuthInterceptor;
 import lombok.AllArgsConstructor;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.web.socket.config.annotation.EnableWebSocket;
@@ -14,7 +14,7 @@ import org.springframework.web.socket.config.annotation.WebSocketHandlerRegistry
 public class RawWebSocketConfig implements WebSocketConfigurer {
 
     private final CursorWebSocketHandler handler;
-    private final WebSocketAuthInterceptor webSocketAuthInterceptor;
+    private final RawWebSocketAuthInterceptor webSocketAuthInterceptor;
 
     @Override
     public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {

@@ -1,8 +1,11 @@
 package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.Chat;
+import com.example.whereshouldwego.dto.request.CandidateRequest;
 import com.example.whereshouldwego.dto.request.ChatRequest;
 import com.example.whereshouldwego.dto.response.ChatResponse;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
+import com.example.whereshouldwego.mapper.ChatMapper;
 import com.example.whereshouldwego.repository.mongo.ChatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
@@ -16,17 +19,18 @@ import java.util.List;
 public class ChatService {
 
     private final SimpMessagingTemplate messagingTemplate;
-    private final ChatRepository chatMessageRepository;
+    private final ChatRepository chatRepository;
 
-    public void handleIncomingChat(ChatRequest dto, String roomCode) {
-        Chat saved = chatMessageRepository.save(dto.toEntity(roomCode, LocalDateTime.now()));
-        messagingTemplate.convertAndSend("/topic/chat." + roomCode, ChatResponse.fromEntity(saved));
+    public void handleAndBroadcast(ChatRequest req, CustomUserDetails user, String roomCode) {
+        Chat chat = ChatMapper.toEntity(req, user.getId(), user.getUsername(), roomCode, LocalDateTime.now());
+        Chat saved = chatRepository.save(chat);
+        messagingTemplate.convertAndSend("/topic/chat." + roomCode, ChatResponse.from(saved));
     }
 
     public List<ChatResponse> getChatHistory(String roomCode) {
-        return chatMessageRepository.findByRoomCodeOrderByCreatedAtAsc(roomCode)
+        return chatRepository.findByRoomCodeOrderByCreatedAtAsc(roomCode)
                 .stream()
-                .map(ChatResponse::fromEntity)
+                .map(ChatResponse::from)
                 .toList();
     }
 }
