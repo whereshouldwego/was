@@ -1,87 +1,143 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="UTF-8" />
     <title>커서 공유 테스트</title>
     <style>
+        body { height: 100vh; margin: 0; }
+        .controls { padding: 12px; display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+        input { padding: 6px 8px; }
+        button { padding: 6px 10px; cursor: pointer; }
         .cursor {
-            position: absolute;
-            width: 10px;
-            height: 10px;
-            background: red;
-            border-radius: 50%;
-            pointer-events: none;
+            position: absolute; width: 10px; height: 10px;
+            background: red; border-radius: 50%; pointer-events: none;
+            transform: translate(-50%, -50%);
+        }
+        .label {
+            position: absolute; transform: translate(-50%, calc(-50% - 12px));
+            font: 12px/1.2 system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+            background: rgba(0,0,0,.6); color: #fff; padding: 2px 6px; border-radius: 6px;
+            pointer-events: none; white-space: nowrap;
         }
     </style>
 </head>
 <body>
-<h2>실시간 커서 공유</h2>
-<input type="text" id="userId" placeholder="User ID">
-<input type="text" id="roomId" placeholder="Room ID">
-<button onclick="connect()">Connect</button>
+<div class="controls">
+    <input type="text" id="roomId" placeholder="Room Code" />
+    <input type="text" id="token" placeholder="JWT(access) 토큰" size="60" />
+    <button id="btnConnect">Connect</button>
+    <button id="btnDisconnect" disabled>Disconnect</button>
+</div>
 
 <script>
-    let socket;
-    let userId, roomCode, jwtToken;
-    const cursors = {};
+    let socket = null;
+    const cursors = {}; // username -> {dot,label}
 
     function connect() {
-        userId = parseInt(document.getElementById('userId').value.trim());
-        roomCode = document.getElementById('roomId').value.trim();
+        const roomCode = document.getElementById('roomId').value.trim();
+        const jwtRaw   = document.getElementById('token').value.trim();
+        if (!roomCode || !jwtRaw) { alert('Room Code, JWT 토큰을 입력하세요.'); return; }
 
-        if (isNaN(userId) || !roomCode) {
-            alert("숫자 User ID, Room ID, JWT 토큰을 입력하세요.");
-            return;
-        }
+        const wsProtocol = location.protocol === 'https:' ? 'wss' : 'ws';
 
-        // 프로토콜 자동 결정 (https → wss, http → ws)
-        const wsProtocol = window.location.protocol === 'https:' ? 'wss' : 'ws';
+        // 쿼리 파라미터로 전달: token=Bearer <token>
+        const bearer = `Bearer ${jwtRaw.replace(/^Bearer\s+/i, '')}`;
+        const url = `${wsProtocol}://${location.host}/ws-raw/cursor` +
+            `?roomCode=${encodeURIComponent(roomCode)}` +
+            `&token=${encodeURIComponent(bearer)}`;
 
-        // JWT 토큰을 쿼리 파라미터로 전달
-        const wsUrl = `${wsProtocol}://${window.location.host}/ws/cursor?roomCode=${encodeURIComponent(roomCode)}&token=Bearer eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IGJlNDhkZmM5LTFmMDEtNGJjNS1iM2UyLWExZDZkMDE4NGY0NCIsInJvbGUiOiJST0xFX0dVRVNUIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJpYXQiOjE3NTQ5ODMxMDIsImV4cCI6MTc1NDk4NjcwMn0.mmE6uq5x61Nt_PpQB3JrkmfgiADcb0MPmug8dyiJ1sM`;
-        console.log("Connecting to:", wsUrl);
-
-        socket = new WebSocket(wsUrl);
+        console.log('Connecting to:', url);
+        socket = new WebSocket(url);
 
         socket.onopen = () => {
-            console.log("🟢 WebSocket 연결됨");
+            console.log('🟢 WebSocket 연결됨');
+            document.getElementById('btnConnect').disabled = true;
+            document.getElementById('btnDisconnect').disabled = false;
 
-            // 마우스 이동 시 커서 위치 전송
-            document.addEventListener('mousemove', (e) => {
-                const payload = {
-                    userId,
-                    roomCode,
-                    lat: e.clientY,
-                    lng: e.clientX
-                };
-                socket.send(JSON.stringify(payload));
-            });
+            // 최신 좌표만 전송 (rAF 스로틀). 바디엔 {lat,lng}만.
+            let pending = null;
+            let rafId = null;
+
+            const sendLatest = () => {
+                rafId = null;
+                if (!socket || socket.readyState !== WebSocket.OPEN || !pending) return;
+                socket.send(JSON.stringify(pending)); // { lat, lng }
+                pending = null;
+            };
+
+            const onMove = (e) => {
+                pending = { lat: e.clientY, lng: e.clientX };
+                if (!rafId) rafId = requestAnimationFrame(sendLatest);
+            };
+
+            document.addEventListener('mousemove', onMove);
+            socket._onMove = onMove;
         };
 
         socket.onmessage = (event) => {
             try {
+                // 서버가 {username, lat, lng} 로 브로드캐스트
                 const data = JSON.parse(event.data);
-                if (data.userId === userId) return; // 내 커서는 무시
+                if (!data || typeof data.username !== 'string') return;
 
-                let cursor = cursors[data.userId];
-                if (!cursor) {
-                    cursor = document.createElement('div');
-                    cursor.className = 'cursor';
-                    cursors[data.userId] = cursor;
-                    document.body.appendChild(cursor);
+                let entry = cursors[data.username];
+                if (!entry) {
+                    const dot = document.createElement('div');
+                    dot.className = 'cursor';
+                    dot.style.background = colorFor(data.username);
+
+                    const label = document.createElement('div');
+                    label.className = 'label';
+                    label.textContent = data.username;
+
+                    document.body.appendChild(dot);
+                    document.body.appendChild(label);
+                    entry = cursors[data.username] = { dot, label };
                 }
 
-                cursor.style.left = `${data.lng}px`;
-                cursor.style.top = `${data.lat}px`;
-            } catch (e) {
-                console.error("❌ 메시지 파싱 오류:", event.data);
+                entry.dot.style.left = `${data.lng}px`;
+                entry.dot.style.top  = `${data.lat}px`;
+                entry.label.style.left = `${data.lng}px`;
+                entry.label.style.top  = `${data.lat}px`;
+            } catch (err) {
+                console.error('❌ 메시지 파싱 오류:', event.data, err);
             }
         };
 
-        socket.onclose = () => {
-            console.log("🔴 WebSocket 연결 종료됨");
+        socket.onerror = (e) => console.error('⚠️ WebSocket 오류:', e);
+
+        socket.onclose = (e) => {
+            console.log(`🔴 Closed: code=${e.code}, reason=${e.reason}`);
+            cleanup();
         };
     }
+
+    function disconnect() {
+        if (socket?.readyState === WebSocket.OPEN) {
+            socket.close(1000, 'client disconnect');
+        } else {
+            cleanup();
+        }
+    }
+
+    function cleanup() {
+        if (socket && socket._onMove) document.removeEventListener('mousemove', socket._onMove);
+        socket = null;
+        document.getElementById('btnConnect').disabled = false;
+        document.getElementById('btnDisconnect').disabled = true;
+    }
+
+    // username마다 고정 색상
+    function colorFor(name) {
+        let hash = 0;
+        for (let i = 0; i < name.length; i++) hash = (hash * 31 + name.charCodeAt(i)) | 0;
+        const hue = Math.abs(hash) % 360;
+        return `hsl(${hue} 80% 50%)`;
+    }
+
+    document.getElementById('btnConnect').onclick = connect;
+    document.getElementById('btnDisconnect').onclick = disconnect;
+    window.addEventListener('beforeunload', disconnect);
 </script>
 </body>
 </html>

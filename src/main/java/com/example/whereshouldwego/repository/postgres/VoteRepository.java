@@ -12,8 +12,6 @@ import java.util.List;
 @Repository
 public interface VoteRepository extends JpaRepository<Vote, Long> {
 
-    boolean existsByRoomIdAndUserIdAndPlaceId(Long roomId, Long userId, Long placeId);
-
     void deleteByRoomIdAndUserIdAndPlaceId(Long roomId, Long userId, Long placeId);
 
     void deleteByRoomIdAndPlaceId(Long roomId, Long placeId);
@@ -24,12 +22,6 @@ public interface VoteRepository extends JpaRepository<Vote, Long> {
         WHERE v.roomId = :roomId AND v.placeId = :placeId
     """)
     List<Long> findVotedUserIds(Long roomId, Long placeId);
-
-    @Query("select new com.example.dto.VoteTuple(v.place.id, v.user.id) " +
-            "from Vote v " +
-            "where v.room.id = :roomId and v.place.id in :placeIds")
-    List<VoteTuple> findUserIdsByRoomIdAndPlaceIds(@Param("roomId") Long roomId,
-                                                   @Param("placeIds") List<Long> placeIds);
 
     @Modifying
     @Query("UPDATE Vote v SET v.userId = :newUserId WHERE v.userId = :oldUserId")

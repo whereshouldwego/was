@@ -69,7 +69,7 @@ public class SecurityConfig {
         http.authorizeHttpRequests(auth -> auth
                 .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
                 .requestMatchers("/api/auth/guest").permitAll()
-                .requestMatchers("/ws/**", "/ws-stomp/**").permitAll()
+                .requestMatchers("/ws-raw/**", "/ws-stomp/**").permitAll()
                 .anyRequest().permitAll()
         );
 
