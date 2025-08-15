@@ -25,8 +25,15 @@ public class Place {
     @Column(name="road_address")
     private String roadAddress;
     private String phone;
-    @Column(name="ai_summary", columnDefinition = "jsonb")
-    private String aiSummary;
+    @Column(columnDefinition = "jsonb")
+    private String menu;
+    @Column(columnDefinition = "jsonb")
+    private String mood;
+    @Column(columnDefinition = "jsonb")
+    private String feature;
+    @Column(columnDefinition = "jsonb")
+    private String purpose;
+    private String categoryDetail;
     @Column(name="category_code")
     private String categoryCode;
     @Column(name="category_name")

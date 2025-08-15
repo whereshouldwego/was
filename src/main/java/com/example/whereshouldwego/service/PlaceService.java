@@ -1,19 +1,14 @@
 package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.Place;
-import com.example.whereshouldwego.dto.request.CreateFavoriteRequest;
-import com.example.whereshouldwego.dto.request.EnsurePlacesRequest;
 import com.example.whereshouldwego.dto.response.PlaceResponse;
 import com.example.whereshouldwego.repository.postgres.PlaceRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
-import jakarta.persistence.PersistenceException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 
-import java.sql.SQLOutput;
 import java.util.Collection;
 import java.util.List;
 import java.util.Set;
@@ -66,5 +61,4 @@ public class PlaceService {
                 .map(PlaceResponse::fromEntity)
                 .toList();
     }
-
 }
