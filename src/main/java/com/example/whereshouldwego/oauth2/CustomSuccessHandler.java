@@ -10,7 +10,6 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.web.authentication.SimpleUrlAuthenticationSuccessHandler;
@@ -54,17 +53,18 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
                 .build();
         refreshRepository.save(savedRefresh);
 
-        // access 토큰을 Authorization 헤더에 담아 반환
-        response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + access);
-
         // refresh 토큰을 쿠키에 담아 반환
         response.addCookie(createCookie("member-refresh", refresh));
 
         // 브라우저를 생성된 URL로 리디렉션 
         String origin = request.getHeader("Origin");
         List<String> allowed = corsProps.getAllowedOrigins();
-        String target = allowed.contains(origin) ? origin : allowed.get(0);
-        response.sendRedirect(target);
+//        String target = allowed.contains(origin) ? origin : allowed.get(0);
+        String target = "http://localhost:5173";
+
+        // 액세스 토큰을 URL 파라미터로 추가
+        String redirectUrl = target + "?accessToken=" + access;
+        response.sendRedirect(redirectUrl);
     }
 
     private Cookie createCookie(String key, String value) {
