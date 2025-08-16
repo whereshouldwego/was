@@ -32,7 +32,7 @@ public class UserService {
     public void changeNicknameProcess(NicknameRequest request, CustomUserDetails userDetails) {
 
         String roomCode = request.getRoomCode();
-        String newNickname = request.getNickname();
+        String newNickname = request.getNewNickname();
         String username = userDetails.getUsername();
 
         Room room = roomRepository.findByRoomCode(roomCode)

@@ -6,5 +6,5 @@ import lombok.Getter;
 public class NicknameRequest {
 
     String roomCode;
-    String nickname;
+    String newNickname;
 }
