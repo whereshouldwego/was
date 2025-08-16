@@ -1,7 +1,12 @@
 package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.Refresh;
+import com.example.whereshouldwego.domain.Room;
+import com.example.whereshouldwego.domain.RoomParticipant;
 import com.example.whereshouldwego.domain.User;
+import com.example.whereshouldwego.dto.request.AuthUpgradeRequest;
+import com.example.whereshouldwego.dto.request.NicknameRequest;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.dto.response.TokenResponse;
 import com.example.whereshouldwego.jwt.JWTUtil;
 import com.example.whereshouldwego.repository.postgres.*;
@@ -15,16 +20,42 @@ import java.util.*;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class GuestLoginService {
+public class UserService {
 
     private final UserRepository userRepository;
     private final RefreshRepository refreshRepository;
+    private final RoomRepository roomRepository;
     private final RoomParticipantRepository roomParticipantRepository;
     private final VoteRepository voteRepository;
     private final JWTUtil jwtUtil;
 
+    public void changeNicknameProcess(NicknameRequest request, CustomUserDetails userDetails) {
+
+        String roomCode = request.getRoomCode();
+        String newNickname = request.getNickname();
+        String username = userDetails.getUsername();
+
+        Room room = roomRepository.findByRoomCode(roomCode)
+                .orElseThrow(() -> new IllegalArgumentException("방 정보를 찾을 수 없습니다."));
+
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("회원 정보를 찾을 수 없습니다."));
+
+        RoomParticipant roomParticipant = roomParticipantRepository.findByRoomAndUser(room, user)
+                .orElseThrow(() -> new IllegalArgumentException("해당 방 참여자를 찾을 수 없습니다."));
+
+        RoomParticipant updatedParticipant = roomParticipant.toBuilder()
+                .nickname(newNickname)
+                .build();
+
+        roomParticipantRepository.save(updatedParticipant);
+    }
+
     @Transactional
-    public void authUpgradeProcess(Long guestId, Long memberId) {
+    public void authUpgradeProcess(AuthUpgradeRequest request) {
+
+        Long guestId = request.getGuestId();
+        Long memberId = request.getMemberId();
 
         User guest = userRepository.findById(guestId)
                 .orElseThrow(() -> new IllegalArgumentException("비회원 정보를 찾을 수 없습니다."));
