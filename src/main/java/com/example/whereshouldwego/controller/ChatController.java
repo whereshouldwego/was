@@ -26,14 +26,6 @@ public class ChatController {
 
     private final ChatService chatService;
 
-    @MessageMapping("/chat.{roomCode}")
-    public void handleChatMessage(@Valid @Payload ChatRequest request,
-                                  Authentication authentication,
-                                  @DestinationVariable String roomCode
-    ) {
-        chatService.handleAndBroadcast(request, authentication, roomCode);
-    }
-
     @GetMapping("/{roomCode}/history")
     public ResponseEntity<List<ChatResponse>> getChatHistory(@PathVariable String roomCode) {
         return ResponseEntity.ok(chatService.getChatHistory(roomCode));

@@ -7,6 +7,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -27,7 +28,8 @@ import static com.example.whereshouldwego.messaging.RawWebSocketAuthInterceptor.
 public class CursorWebSocketHandler extends TextWebSocketHandler {
 
     private final ObjectMapper objectMapper = new ObjectMapper();
-    private final @Qualifier("wsTaskExecutor")TaskExecutor taskExecutor;
+
+    private final @Qualifier("websocketTaskExecutor")TaskExecutor taskExecutor;
 
     // roomCode -> sessions
     private final Map<String, Set<WebSocketSession>> roomSessions = new ConcurrentHashMap<>();

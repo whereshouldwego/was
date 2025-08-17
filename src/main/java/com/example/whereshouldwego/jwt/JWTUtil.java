@@ -2,6 +2,7 @@ package com.example.whereshouldwego.jwt;
 
 import io.jsonwebtoken.Jwts;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.messaging.MessagingException;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -72,5 +73,21 @@ public class JWTUtil {
                 .expiration(new Date(System.currentTimeMillis() + expiredMs))
                 .signWith(secretKey)
                 .compact();
+    }
+
+    public static String extractBearer(String raw) {
+        if (raw == null) return null;
+        return raw.startsWith("Bearer ") ? raw.substring(7) : raw;
+    }
+
+    public static String extractRoomCode(String destination) {
+        if (destination == null || destination.isBlank()) {
+            throw new MessagingException("Destination is empty");
+        }
+        int dot = destination.lastIndexOf('.');
+        if (dot >= 0 && dot + 1 < destination.length()) {
+            return destination.substring(dot + 1);
+        }
+        throw new MessagingException("Cannot extract roomCode from destination: " + destination);
     }
 }

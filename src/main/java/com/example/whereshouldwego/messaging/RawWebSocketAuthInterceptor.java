@@ -18,6 +18,8 @@ import org.springframework.web.socket.server.HandshakeInterceptor;
 
 import java.util.Map;
 
+import static com.example.whereshouldwego.jwt.JWTUtil.extractBearer;
+
 @Component
 @RequiredArgsConstructor
 public class RawWebSocketAuthInterceptor implements HandshakeInterceptor {
@@ -66,7 +68,6 @@ public class RawWebSocketAuthInterceptor implements HandshakeInterceptor {
         return true;
     }
 
-
     @Override
     public void afterHandshake(
             ServerHttpRequest request,
@@ -74,8 +75,4 @@ public class RawWebSocketAuthInterceptor implements HandshakeInterceptor {
             WebSocketHandler wsHandler,
             Exception exception
     ) {}
-
-    private static String extractBearer(String header) {
-        return (header != null && header.startsWith("Bearer ")) ? header.substring(7) : null;
-    }
 }

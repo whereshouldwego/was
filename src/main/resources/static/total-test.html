@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <title>WS/STOMP 통합 테스트</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <style>
+        :root { --bg:#0b0c10; --card:#1f2833; --ink:#c5c6c7; --accent:#66fcf1; --muted:#45a29e; }
+        *{box-sizing:border-box} body{margin:0;font:14px/1.45 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--ink)}
+        .wrap{max-width:1100px;margin:24px auto;padding:0 16px}
+        .header{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:16px}
+        .header input{padding:8px 10px;border-radius:8px;border:1px solid #334;min-width:240px;background:#0f1318;color:var(--ink)}
+        .pill{padding:8px 12px;border-radius:999px;background:var(--card);border:1px solid #334;color:var(--ink)}
+        .tabs{display:flex;gap:8px;margin:8px 0 16px}
+        .tab-btn{padding:10px 14px;border-radius:10px;border:1px solid #394452;background:var(--card);color:var(--ink);cursor:pointer}
+        .tab-btn.active{outline:2px solid var(--accent);color:#0b0c10;background:var(--accent)}
+        .grid{display:grid;gap:12px}
+        .card{background:var(--card);border:1px solid #334;border-radius:14px;padding:14px}
+        .row{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+        input,select,button,textarea{border-radius:10px;border:1px solid #394452;background:#0f1318;color:var(--ink)}
+        input,select{padding:8px 10px}
+        button{padding:9px 12px;cursor:pointer}
+        button.primary{background:var(--accent);color:#061014;border-color:transparent}
+        button.ghost{background:transparent}
+        textarea{width:100%;min-height:180px;padding:10px}
+        .muted{color:#9aa4b2}
+        .cursor-dot{position:absolute;width:10px;height:10px;border-radius:50%;pointer-events:none;transform:translate(-50%,-50%)}
+        .cursor-label{position:absolute;transform:translate(-50%,calc(-50% - 12px));font-size:12px;color:#fff;background:rgba(0,0,0,.6);padding:2px 6px;border-radius:6px;pointer-events:none;white-space:nowrap}
+        .stage{position:relative;min-height:50vh;border-radius:12px;border:1px dashed #3a4656;background:linear-gradient(180deg,#0f1318,#0d1016)}
+        .hint{font-size:12px;color:#9aa4b2}
+        .hr{height:1px;background:#2b3644;margin:10px 0 6px 0;border:0}
+        .mono{font-family:ui-monospace, SFMono-Regular, Menlo, Consolas, monospace}
+    </style>
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+</head>
+<body>
+<div class="wrap">
+    <div class="header">
+        <span class="pill">통합 테스트 페이지</span>
+        <input id="globalToken" placeholder="JWT (Bearer 없이 입력해도 자동 보정)" />
+        <button class="ghost" onclick="copyAuth()">헤더 미리보기</button>
+        <span class="hint">모든 섹션에서 이 토큰을 사용합니다.</span>
+    </div>
+
+    <div class="tabs">
+        <button class="tab-btn active" data-tab="tab-cursor" onclick="switchTab(this)">커서 공유 (Raw WS)</button>
+        <button class="tab-btn" data-tab="tab-chat" onclick="switchTab(this)">채팅 (STOMP)</button>
+        <button class="tab-btn" data-tab="tab-candidate" onclick="switchTab(this)">후보지 (STOMP)</button>
+    </div>
+
+    <!-- 커서 공유 -->
+    <section id="tab-cursor" class="grid">
+        <div class="card">
+            <div class="row">
+                <input id="cursorRoom" placeholder="Room Code" />
+                <button class="primary" id="btnCursorConnect" onclick="cursorConnect()">Connect</button>
+                <button id="btnCursorDisconnect" onclick="cursorDisconnect()" disabled>Disconnect</button>
+            </div>
+            <div class="hr"></div>
+            <div class="stage" id="cursorStage">
+                <div style="position:absolute;inset:10px;pointer-events:none" class="muted">
+                    마우스를 움직이면 좌표가 전송되고, 같은 방의 다른 접속자 커서가 표시됩니다.
+                </div>
+            </div>
+            <div class="hint" style="margin-top:8px">엔드포인트: <span class="mono">/ws-raw/cursor?roomCode=&token=Bearer ...</span></div>
+        </div>
+    </section>
+
+    <!-- 채팅 -->
+    <section id="tab-chat" class="grid" style="display:none">
+        <div class="card">
+            <div class="row">
+                <input id="chatRoom" placeholder="채팅방 코드" />
+                <input id="chatName" placeholder="별명 (표시용)" />
+                <button class="primary" onclick="chatConnect()">채팅 연결</button>
+                <button onclick="chatDisconnect()">종료</button>
+            </div>
+            <div class="hr"></div>
+            <textarea id="chatLog" readonly placeholder="[채팅 로그]"></textarea>
+            <div class="row">
+                <input id="chatMsg" placeholder="메시지" style="flex:1" />
+                <button class="primary" onclick="chatSend()">보내기</button>
+            </div>
+            <div class="hint">구독: <span class="mono">/topic/chat.{room}</span> · 발행: <span class="mono">/app/chat.{room}</span> · 기록: <span class="mono">GET /api/chats/{room}/history</span></div>
+        </div>
+    </section>
+
+    <!-- 후보지 -->
+    <section id="tab-candidate" class="grid" style="display:none">
+        <div class="card">
+            <div class="row">
+                <input id="candRoom" placeholder="Room Code" />
+                <button class="primary" onclick="candConnect()">Connect & Subscribe</button>
+                <button onclick="candDisconnect()">Disconnect</button>
+            </div>
+            <div class="row">
+                <input id="placeId" type="number" placeholder="Place ID" style="width:160px" />
+                <select id="actionType">
+                    <option>ADD_PLACE</option>
+                    <option>REMOVE_PLACE</option>
+                    <option selected>ADD_VOTE</option>
+                    <option>REMOVE_VOTE</option>
+                </select>
+                <button onclick="candSend()">Send</button>
+            </div>
+            <div class="hr"></div>
+            <textarea id="candLog" readonly placeholder="[후보지 로그]"></textarea>
+            <div class="hint">구독: <span class="mono">/topic/candidate.{room}</span> · 발행: <span class="mono">/app/candidate.{room}</span></div>
+        </div>
+    </section>
+</div>
+
+<script>
+    /* ---------- 공통 ---------- */
+    function ensureBearer(raw) {
+        if (!raw) return '';
+        return /^bearer\s+/i.test(raw) ? raw : `Bearer ${raw}`;
+    }
+    function copyAuth() {
+        const hdr = ensureBearer(document.getElementById('globalToken').value.trim());
+        navigator.clipboard?.writeText(hdr);
+        alert('Authorization 헤더 값이 복사되었습니다.');
+    }
+    function switchTab(btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const id = btn.dataset.tab;
+        document.querySelectorAll('section[id^=tab-]').forEach(s => s.style.display = (s.id === id ? '' : 'none'));
+    }
+
+    /* ---------- 커서 공유 (Raw WebSocket) ---------- */
+    let cursorWS = null;
+    const cursorDots = {}; // username -> {dot,label}
+    function cursorConnect() {
+        const room = document.getElementById('cursorRoom').value.trim();
+        const tokenRaw = ensureBearer(document.getElementById('globalToken').value.trim());
+        if (!room || !tokenRaw) { alert('Room/Token 필수'); return; }
+
+        const proto = location.protocol === 'https:' ? 'wss' : 'ws';
+        const qs = `?roomCode=${encodeURIComponent(room)}&token=${encodeURIComponent(tokenRaw)}`;
+        const url = `${proto}://${location.host}/ws-raw/cursor${qs}`;
+
+        cursorWS = new WebSocket(url);
+        cursorWS.onopen = () => {
+            document.getElementById('btnCursorConnect').disabled = true;
+            document.getElementById('btnCursorDisconnect').disabled = false;
+
+            // 최신 좌표만 rAF로 전송
+            let pending=null, rafId=null;
+            const sendLatest=()=>{
+                rafId=null;
+                if (cursorWS?.readyState !== WebSocket.OPEN || !pending) return;
+                cursorWS.send(JSON.stringify(pending)); // {lat,lng}
+                pending=null;
+            };
+            const onMove = (e)=>{
+                // 스테이지 내 좌표만 보낼거면 offset 계산 가능 (지금은 뷰포트 좌표 그대로)
+                pending = { lat: e.clientY, lng: e.clientX };
+                if (!rafId) rafId = requestAnimationFrame(sendLatest);
+            };
+            document.addEventListener('mousemove', onMove);
+            cursorWS._onMove = onMove;
+        };
+        cursorWS.onmessage = (ev)=>{
+            try{
+                const data = JSON.parse(ev.data); // {username,lat,lng}
+                if (!data || typeof data.username !== 'string') return;
+                let entry = cursorDots[data.username];
+                if (!entry) {
+                    const dot = document.createElement('div'); dot.className='cursor-dot'; dot.style.background = colorFor(data.username);
+                    const label = document.createElement('div'); label.className='cursor-label'; label.textContent = data.username;
+                    document.getElementById('cursorStage').append(dot,label);
+                    entry = cursorDots[data.username] = { dot, label };
+                }
+                entry.dot.style.left = `${data.lng}px`; entry.dot.style.top = `${data.lat}px`;
+                entry.label.style.left = `${data.lng}px`; entry.label.style.top = `${data.lat}px`;
+            }catch(e){ console.error('파싱 실패', e, ev.data); }
+        };
+        cursorWS.onerror = (e)=> console.warn('WS error', e);
+        cursorWS.onclose = ()=> cursorDisconnect(true);
+    }
+    function cursorDisconnect(fromClose=false){
+        if (cursorWS && cursorWS._onMove) document.removeEventListener('mousemove', cursorWS._onMove);
+        if (cursorWS && !fromClose && cursorWS.readyState === WebSocket.OPEN) cursorWS.close(1000, 'client close');
+        cursorWS = null;
+        document.getElementById('btnCursorConnect').disabled = false;
+        document.getElementById('btnCursorDisconnect').disabled = true;
+    }
+    function colorFor(name){
+        let h=0; for (let i=0;i<name.length;i++) h=(h*31+name.charCodeAt(i))|0;
+        return `hsl(${Math.abs(h)%360} 80% 50%)`;
+    }
+
+    /* ---------- 채팅 (STOMP) ---------- */
+    let stompChat = null, subChat = null;
+    document.getElementById('chatMsg').addEventListener('keydown', (e)=>{ if(e.key==='Enter'){ e.preventDefault(); chatSend(); }});
+    async function chatConnect(){
+        const room = document.getElementById('chatRoom').value.trim();
+        const name = document.getElementById('chatName').value.trim();
+        const token = ensureBearer(document.getElementById('globalToken').value.trim());
+        if (!room || !name || !token) return alert('Room/별명/토큰 필수');
+
+        // 기록 불러오기
+        try{
+            const res = await fetch('/api/chats/'+encodeURIComponent(room)+'/history', { headers:{Authorization:token} });
+            const log = document.getElementById('chatLog'); log.value='';
+            if (res.ok){
+                (await res.json()).forEach(addChatLine);
+            } else {
+                log.value += `[WARN] 기록 불러오기 실패: ${res.status}\n`;
+            }
+        } catch(e){ console.warn('기록 오류', e); }
+
+        if (stompChat?.connected){ subChat?.unsubscribe(); stompChat.disconnect(()=>connectChatCore(room, token)); }
+        else connectChatCore(room, token);
+    }
+    function connectChatCore(room, token){
+        stompChat = Stomp.over(new SockJS('/ws-stomp'));
+        // stompChat.debug = null;
+        stompChat.connect({ Authorization: token }, ()=>{
+            subChat = stompChat.subscribe('/topic/chat.'+room, (frame)=>{
+                try{ addChatLine(JSON.parse(frame.body)); }catch(e){ console.error('수신 파싱 실패', e); }
+            });
+            console.log('chat subscribed');
+        }, (err)=> alert('STOMP 연결 실패: '+err));
+    }
+    function addChatLine(msg){
+        const who = msg.username || (msg.userId!=null ? `유저 ${msg.userId}` : '알수없음');
+        const time = formatTime(msg.createdAt);
+        document.getElementById('chatLog').value += `[${time}] ${who}: ${msg.content}\n`;
+    }
+    function chatSend(){
+        const room = document.getElementById('chatRoom').value.trim();
+        const content = document.getElementById('chatMsg').value.trim();
+        const name = document.getElementById('chatName').value.trim();
+        if (!stompChat?.connected) return alert('먼저 채팅 연결을 해주세요.');
+        if (!content) return;
+
+        stompChat.send('/app/chat.'+room, {}, JSON.stringify({ username:name, content:content }));
+        document.getElementById('chatMsg').value='';
+    }
+    function chatDisconnect(){ subChat?.unsubscribe(); subChat=null; stompChat?.disconnect(()=>console.log('chat disconnected')); stompChat=null; }
+    function formatTime(v){
+        try{ const d=new Date(v); if (!isNaN(d)) return new Intl.DateTimeFormat('ko-KR',{year:'2-digit',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit'}).format(d); return v??''; }
+        catch{ return v??''; }
+    }
+
+    /* ---------- 후보지 (STOMP) ---------- */
+    let stompCand=null, subCand=null;
+    function candConnect(){
+        const room = document.getElementById('candRoom').value.trim();
+        const token = ensureBearer(document.getElementById('globalToken').value.trim());
+        if (!room || !token) return alert('Room/토큰 필수');
+
+        if (stompCand?.connected){ subCand?.unsubscribe(); stompCand.disconnect(()=>connectCandCore(room, token)); }
+        else connectCandCore(room, token);
+    }
+    function connectCandCore(room, token){
+        stompCand = Stomp.over(new SockJS('/ws-stomp'));
+        // stompCand.debug = null;
+        stompCand.connect({ Authorization: token }, ()=>{
+            subCand = stompCand.subscribe('/topic/candidate.'+room, (msg)=>{
+                document.getElementById('candLog').value += `📩 ${msg.body}\n`;
+            });
+            document.getElementById('candLog').value += `✅ Subscribed /topic/candidate.${room}\n`;
+        }, (err)=> document.getElementById('candLog').value += `❌ Connect fail: ${err}\n`);
+    }
+    function candSend(){
+        if (!stompCand?.connected) return alert('먼저 Connect 하세요.');
+        const room = document.getElementById('candRoom').value.trim();
+        const placeId = Number(document.getElementById('placeId').value);
+        const actionType = document.getElementById('actionType').value;
+        const payload = { placeId, actionType };
+        stompCand.send('/app/candidate.'+room, {}, JSON.stringify(payload));
+        document.getElementById('candLog').value += `📤 ${JSON.stringify(payload)}\n`;
+    }
+    function candDisconnect(){ subCand?.unsubscribe(); subCand=null; stompCand?.disconnect(()=>console.log('candidate disconnected')); stompCand=null; }
+
+    /* ---------- 페이지 언로드 시 정리 ---------- */
+    window.addEventListener('beforeunload', ()=>{
+        try{ cursorDisconnect(); }catch{}
+        try{ chatDisconnect(); }catch{}
+        try{ candDisconnect(); }catch{}
+    });
+</script>
+</body>
+</html>
