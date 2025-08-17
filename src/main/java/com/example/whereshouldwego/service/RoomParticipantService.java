@@ -23,7 +23,6 @@ public class RoomParticipantService {
     private final RoomRepository roomRepository;
     private final UserRepository userRepository;
     private final RoomParticipantRepository roomParticipantRepository;
-    private final Random random = new Random();
 
     private final List<String> nouns = Arrays.asList(
             "고래", "상어", "참새", "까치", "표범", "사슴", "홍학", "수달", "기린", "여우"
@@ -67,13 +66,20 @@ public class RoomParticipantService {
                     // 닉네임 및 색깔 생성
                     String nickname = null;
 
-                    for (int i = 0; i < nouns.size(); i++) {
-                        String candidateNickname = nouns.get(i);
+                    if (user.getRole().equals("ROLE_MEMBER")) {
 
-                        // 닉네임과 색깔이 모두 사용 중이 아닐 때
-                        if (!existNicknames.contains(candidateNickname)) {
-                            nickname = candidateNickname;
-                            break;
+                        nickname = user.getName();
+                    }
+                    else {
+
+                        for (int i = 0; i < nouns.size(); i++) {
+                            String candidateNickname = nouns.get(i);
+
+                            // 닉네임과 색깔이 모두 사용 중이 아닐 때
+                            if (!existNicknames.contains(candidateNickname)) {
+                                nickname = candidateNickname;
+                                break;
+                            }
                         }
                     }
 
