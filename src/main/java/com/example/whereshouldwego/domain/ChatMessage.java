@@ -24,4 +24,5 @@ public class ChatMessage {
     private String roomCode;
     private String content;
     private LocalDateTime createdAt;
+    private Boolean isAiRequest;
 }
