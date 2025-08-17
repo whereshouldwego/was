@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.List;
 
 @Getter
 @AllArgsConstructor
@@ -17,6 +19,8 @@ public class ChatMessageResponseDto {
     private String roomCode;
     private String content;
     private LocalDateTime createdAt;
+    private Boolean isAiRequest;
+    private List<RecommendedPlaceDetail> places;
 
     public static ChatMessageResponseDto fromEntity(ChatMessage chatMessage) {
         return ChatMessageResponseDto.builder()
@@ -26,6 +30,8 @@ public class ChatMessageResponseDto {
                 .roomCode(chatMessage.getRoomCode())
                 .content(chatMessage.getContent())
                 .createdAt(chatMessage.getCreatedAt())
+                .isAiRequest(chatMessage.getIsAiRequest())
+                .places(Collections.emptyList())
                 .build();
     }
 }

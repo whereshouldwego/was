@@ -10,6 +10,7 @@ public class ChatMessageRequestDto {
     private Long userId;
     private String username;
     private String content;
+    private Boolean isAiRequest;
 
     public ChatMessage toEntity(String roomCode) {
         return ChatMessage.builder()
@@ -18,6 +19,7 @@ public class ChatMessageRequestDto {
                 .roomCode(roomCode)
                 .content(content)
                 .createdAt(LocalDateTime.now())
+                .isAiRequest(isAiRequest)
                 .build();
     }
 }

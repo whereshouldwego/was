@@ -7,6 +7,7 @@ import com.example.whereshouldwego.repository.mongo.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.web.reactive.function.client.WebClient;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -17,6 +18,7 @@ public class ChatService {
 
     private final SimpMessagingTemplate messagingTemplate;
     private final ChatMessageRepository chatMessageRepository;
+    private final AiRecommendationService aiRecommendationService;
 
     public void handleIncomingChat(ChatMessageRequestDto dto, String roomCode) {
         ChatMessage saved = chatMessageRepository.save(dto.toEntity(roomCode));
@@ -24,6 +26,10 @@ public class ChatService {
         ChatMessageResponseDto response = ChatMessageResponseDto.fromEntity(saved);
 
         messagingTemplate.convertAndSend("/topic/chat." + roomCode, response);
+
+        if (dto.getIsAiRequest()) {
+            aiRecommendationService.getRecommendationAsync(dto.getContent(), roomCode);
+        }
     }
 
     public List<ChatMessageResponseDto> getChatHistory(String roomCode) {

@@ -33,9 +33,12 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
 	implementation 'org.springframework.boot:spring-boot-starter-websocket'
 
+	// WebClient
+	implementation 'org.springframework.boot:spring-boot-starter-webflux'
+
 	// STOMP Broker(RabbitMQ)
-	implementation 'io.projectreactor.netty:reactor-netty-core:1.1.12'
-	implementation 'io.projectreactor.netty:reactor-netty:1.1.13'
+//	implementation 'io.projectreactor.netty:reactor-netty-core:1.1.12'
+//	implementation 'io.projectreactor.netty:reactor-netty:1.1.13'
 
 	// Security
 	implementation 'org.springframework.boot:spring-boot-starter-security'
