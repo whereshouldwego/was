@@ -60,7 +60,7 @@
   }
 
   function connectStomp(roomCode) {
-      const token = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IGJlNDhkZmM5LTFmMDEtNGJjNS1iM2UyLWExZDZkMDE4NGY0NCIsInJvbGUiOiJST0xFX0dVRVNUIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJpYXQiOjE3NTU0NDI0MzUsImV4cCI6MTc1NTQ0NjAzNX0.rLOuO9vtGA5QyL0ZAEA_u1Iv9ojuKxYoyaWoQc5WgUg";
+      const token = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IGJlNDhkZmM5LTFmMDEtNGJjNS1iM2UyLWExZDZkMDE4NGY0NCIsInJvbGUiOiJST0xFX0dVRVNUIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJpYXQiOjE3NTU0NDYzNjAsImV4cCI6MTc1NTQ0OTk2MH0.HUYAiu81kgDQhTDYV8i1oz6Gw5eVLOhwI432bhNAdpA";
 
       const socket = new SockJS('/ws');
       stompClient = Stomp.over(socket);
