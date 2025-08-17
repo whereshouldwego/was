@@ -29,69 +29,104 @@ public class AiRecommendationService {
     private final RecommendationRepository recommendationRepository;
 
     public void getRecommendationAsync(String userMessage, String roomCode) {
+        log.info("AI call START room={} msg={}", roomCode, userMessage);
+
         webClient.post()
-                .uri("http://localhost:8001/api/recommend")
+                .uri("http://43.202.44.70:8001/api/recommend")
                 .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("query", userMessage))
                 .retrieve()
-                .bodyToMono(Map.class)
+                .bodyToMono(String.class) // ★ 응답을 문자열로 받음
                 .subscribe(
-                        // 성공 시 처리
-                        apiResponse -> {
-                            try {
-                                String content = (String) apiResponse.get("content");
-                                List<Map<String, Object>> places = (List<Map<String, Object>>) apiResponse.get("places");
+                        raw -> {
+                            log.info("[AI raw body] {}", raw); // ★ 응답 그냥 출력
 
-                                // AI 응답 메시지 생성 및 저장
-                                ChatMessage aiMessage = ChatMessage.builder()
-                                        .userId(null)
-                                        .username("AI")
-                                        .roomCode(roomCode)
-                                        .content(content)
-                                        .createdAt(LocalDateTime.now())
-                                        .isAiRequest(false)
-                                        .build();
+                            ChatMessage saved = chatMessageRepository.save(
+                                    ChatMessage.builder()
+                                            .userId(null)
+                                            .username("AI Assistant")
+                                            .roomCode(roomCode)
+                                            .content(raw) // ★ 응답 그대로 content에 저장
+                                            .createdAt(LocalDateTime.now())
+                                            .isAiRequest(false)
+                                            .build()
+                            );
 
-                                ChatMessage savedAiMessage = chatMessageRepository.save(aiMessage);
-
-                                // 기본 응답 생성
-                                ChatMessageResponseDto aiResponse = ChatMessageResponseDto.fromEntity(savedAiMessage);
-
-                                // places 정보를 RecommendedPlaceDetail로 변환하여 추가
-                                List<RecommendedPlaceDetail> placeDetails = convertToPlaceDetails(places);
-
-                                // places 정보를 포함한 새로운 응답 생성
-                                ChatMessageResponseDto responseWithPlaces = ChatMessageResponseDto.builder()
-                                        .id(aiResponse.getId())
-                                        .userId(aiResponse.getUserId())
-                                        .username(aiResponse.getUsername())
-                                        .roomCode(aiResponse.getRoomCode())
-                                        .content(aiResponse.getContent())
-                                        .createdAt(aiResponse.getCreatedAt())
-                                        .isAiRequest(aiResponse.getIsAiRequest())
-                                        .places(placeDetails) // places 정보 추가
-                                        .build();
-
-                                // 추천 결과를 Recommendations 테이블에 저장
-                                saveRecommendations(roomCode, places);
-
-                                // WebSocket으로 AI 응답 전송
-                                messagingTemplate.convertAndSend("/topic/chat." + roomCode, responseWithPlaces);
-
-                                log.info("AI 응답 전송 완료 - 룸코드: {}", roomCode);
-
-                            } catch (Exception e) {
-                                log.error("AI 응답 처리 중 오류 발생: ", e);
-                                sendErrorMessage(roomCode);
-                            }
+                            ChatMessageResponseDto dto = ChatMessageResponseDto.fromEntity(saved);
+                            messagingTemplate.convertAndSend("/topic/chat." + roomCode, dto);
                         },
-                        // API 호출 에러 시 처리
-                        error -> {
-                            log.error("FastAPI 호출 중 오류 발생: ", error);
+                        err -> {
+                            log.error("FastAPI 호출 실패", err);
                             sendErrorMessage(roomCode);
                         }
                 );
     }
+
+//    public void getRecommendationAsync(String userMessage, String roomCode) {
+//        webClient.post()
+//                .uri("http://43.202.44.70:8001/api/recommend")
+//                .contentType(MediaType.APPLICATION_JSON)
+//                .bodyValue(Map.of("query", userMessage))
+//                .retrieve()
+//                .bodyToMono(Map.class)
+//                .subscribe(
+//                        // 성공 시 처리
+//                        apiResponse -> {
+//                            try {
+//                                String content = (String) apiResponse.get("content");
+//                                List<Map<String, Object>> places = (List<Map<String, Object>>) apiResponse.get("places");
+//
+//                                // AI 응답 메시지 생성 및 저장
+//                                ChatMessage aiMessage = ChatMessage.builder()
+//                                        .userId(null)
+//                                        .username("AI")
+//                                        .roomCode(roomCode)
+//                                        .content(content)
+//                                        .createdAt(LocalDateTime.now())
+//                                        .isAiRequest(false)
+//                                        .build();
+//
+//                                ChatMessage savedAiMessage = chatMessageRepository.save(aiMessage);
+//
+//                                // 기본 응답 생성
+//                                ChatMessageResponseDto aiResponse = ChatMessageResponseDto.fromEntity(savedAiMessage);
+//
+//                                // places 정보를 RecommendedPlaceDetail로 변환하여 추가
+//                                List<RecommendedPlaceDetail> placeDetails = convertToPlaceDetails(places);
+//
+//                                // places 정보를 포함한 새로운 응답 생성
+//                                ChatMessageResponseDto responseWithPlaces = ChatMessageResponseDto.builder()
+//                                        .id(aiResponse.getId())
+//                                        .userId(aiResponse.getUserId())
+//                                        .username(aiResponse.getUsername())
+//                                        .roomCode(aiResponse.getRoomCode())
+//                                        .content(aiResponse.getContent())
+//                                        .createdAt(aiResponse.getCreatedAt())
+//                                        .isAiRequest(aiResponse.getIsAiRequest())
+//                                        .places(placeDetails) // places 정보 추가
+//                                        .build();
+//
+//                                // 추천 결과를 Recommendations 테이블에 저장
+//                                saveRecommendations(roomCode, places);
+//
+//                                // WebSocket으로 AI 응답 전송
+//                                messagingTemplate.convertAndSend("/topic/chat." + roomCode, responseWithPlaces);
+//
+//                                log.info("AI 응답 전송 완료 - 룸코드: {}", roomCode);
+//
+//                            } catch (Exception e) {
+//                                log.error("AI 응답 처리 중 오류 발생: ", e);
+//                                sendErrorMessage(roomCode);
+//                            }
+//                        },
+//                        // API 호출 에러 시 처리
+//                        error -> {
+//                            log.error("FastAPI 호출 중 오류 발생: ", error);
+//                            sendErrorMessage(roomCode);
+//                        }
+//                );
+//    }
 
     private List<RecommendedPlaceDetail> convertToPlaceDetails(List<Map<String, Object>> places) {
         if (places == null) {

@@ -60,9 +60,9 @@
   }
 
   function connectStomp(roomCode) {
-      const token = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IGUwZDg4YTc0LTIxZDUtNDMyZC05ZDI3LTIyNWNmOTFlYjJjMiIsInJvbGUiOiJST0xFX0dVRVNUIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJpYXQiOjE3NTU0Mjg0NTAsImV4cCI6MTc1NTQzMjA1MH0.DtM-rCNUwLU7BMcuSgwhcpjLT0Bw_9_3dkCoiG48t2A";
+      const token = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imd1ZXN0IGJlNDhkZmM5LTFmMDEtNGJjNS1iM2UyLWExZDZkMDE4NGY0NCIsInJvbGUiOiJST0xFX0dVRVNUIiwiY2F0ZWdvcnkiOiJhY2Nlc3MiLCJpYXQiOjE3NTU0NDI0MzUsImV4cCI6MTc1NTQ0NjAzNX0.rLOuO9vtGA5QyL0ZAEA_u1Iv9ojuKxYoyaWoQc5WgUg";
 
-      const socket = new SockJS('http://localhost:8000/ws');
+      const socket = new SockJS('/ws');
       stompClient = Stomp.over(socket);
 
       // 디버그 모드 활성화
@@ -111,7 +111,7 @@
       };
 
       log('📤 메시지 전송: ' + JSON.stringify(message));
-      stompClient.send(`/app/chat.${roomCode}`, {}, JSON.stringify(message));
+      stompClient.send(`/ws/chat.${roomCode}`, {}, JSON.stringify(message));
 
       document.getElementById('messageInput').value = '';
       document.getElementById('isAiRequest').checked = false;
