@@ -38,7 +38,7 @@ public class UserController {
 
     @PostMapping("/guest")
     public ResponseEntity<Void> loginProcess(
-            @CookieValue(value = "guest-refresh", required = false) String refresh,
+            @CookieValue(value = "refresh", required = false) String refresh,
             HttpServletResponse response) {
 
         // access 토큰, refresh 토큰 받아옴
@@ -48,7 +48,7 @@ public class UserController {
         response.addHeader(HttpHeaders.AUTHORIZATION, "Bearer " + tokens.getAccessToken());
 
         // refresh 토큰을 쿠키에 담아 반환
-        response.addCookie(createCookie("guest-refresh", tokens.getRefreshToken()));
+        response.addCookie(createCookie("refresh", tokens.getRefreshToken()));
 
         return ResponseEntity.ok().build();
     }

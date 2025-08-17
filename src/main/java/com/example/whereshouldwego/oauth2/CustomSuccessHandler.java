@@ -54,13 +54,13 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         refreshRepository.save(savedRefresh);
 
         // refresh 토큰을 쿠키에 담아 반환
-        response.addCookie(createCookie("member-refresh", refresh));
+        response.addCookie(createCookie("refresh", refresh));
 
         // 브라우저를 생성된 URL로 리디렉션 
         String origin = request.getHeader("Origin");
         List<String> allowed = corsProps.getAllowedOrigins();
 //        String target = allowed.contains(origin) ? origin : allowed.get(0);
-        String target = "http://localhost:5173";
+        String target = "http://localhost:5173";    // 추후 수정 필요
 
         // 액세스 토큰을 URL 파라미터로 추가
         String redirectUrl = target + "?accessToken=" + access;
