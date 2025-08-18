@@ -30,7 +30,7 @@ public class AiRecommendationService {
 
     public void getRecommendationAsync(String userMessage, String roomCode) {
         webClient.post()
-                .uri("http://43.202.44.70:8001/api/recommend")
+                .uri("http://recommend:8000/api/recommend")
                 .contentType(MediaType.APPLICATION_JSON)
                 .bodyValue(Map.of("query", userMessage))
                 .retrieve()
