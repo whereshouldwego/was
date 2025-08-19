@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>AI 채팅 테스트</title>
+</head>
+<body>
+<h2>AI 추천 채팅 테스트</h2>
+
+<!-- 사용자 입력 영역 -->
+<input type="number" id="userId" placeholder="유저 ID (숫자만)" value="12345">
+<input type="text" id="username" placeholder="사용자명" value="test-user">
+<input type="text" id="roomCode" placeholder="채팅방 코드" value="RQxvNA" readonly>
+<button onclick="connect()">채팅 연결</button>
+
+<!-- 채팅 영역 -->
+<br><br>
+<textarea id="chat" rows="20" cols="100" readonly></textarea><br>
+<input type="text" id="messageInput" placeholder="메시지를 입력하세요" style="width: 400px;">
+<label><input type="checkbox" id="isAiRequest"> AI 요청</label>
+<button onclick="sendMessage()">보내기</button>
+
+<br><br>
+<h3>테스트 버튼</h3>
+<button onclick="sendTestMessage('안녕하세요', false)">일반 메시지</button>
+<button onclick="sendTestMessage('대전 둔산동 한식집 추천해줘', true)">AI 추천 요청</button>
+<button onclick="sendTestMessage('오늘 날씨 어때?', true)">AI 일반 질문</button>
+<button onclick="loadHistory()">채팅 기록 로드</button>
+
+<!-- 라이브러리 로드 -->
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/stompjs@2.3.3/lib/stomp.min.js"></script>
+
+<script>
+  let stompClient = null;
+  let subscription = null;
+
+  async function connect() {
+      const roomCode = document.getElementById('roomCode').value.trim();
+      if (!roomCode) {
+          alert("채팅방 코드를 입력하세요.");
+          return;
+      }
+
+      log('🔌 연결 시도 중...');
+
+      // 기존 연결 해제
+      if (stompClient !== null && stompClient.connected) {
+          if (subscription) {
+              subscription.unsubscribe();
+              log('📴 이전 구독 해제됨');
+          }
+          stompClient.disconnect(() => {
+              log('🔌 기존 연결 종료됨');
+              connectStomp(roomCode);
+          });
+      } else {
+          connectStomp(roomCode);
+      }
+  }
+
+  function connectStomp(roomCode) {
+      const token = "eyJhbGciOiJIUzI1NiJ9.eyJ1c2VybmFtZSI6Imtha2FvIDQzODczMTU5NjUiLCJyb2xlIjoiUk9MRV9NRU1CRVIiLCJjYXRlZ29yeSI6ImFjY2VzcyIsImlhdCI6MTc1NTQ3NDk2NiwiZXhwIjoxNzU1NDc4NTY2fQ.N4TrgOVaqfEzqKoVUgtL33Ydbh09RsQsdO4hFWhrjgw";
+
+      const socket = new SockJS('/ws');
+      stompClient = Stomp.over(socket);
+
+      // 디버그 모드 활성화
+      stompClient.debug = function(str) {
+          console.log('STOMP Debug:', str);
+      };
+
+      stompClient.connect(
+          { Authorization: "Bearer " + token },
+          function () {
+              log('✅ WebSocket 연결 성공!');
+
+              subscription = stompClient.subscribe('/topic/chat.' + roomCode, function (message) {
+                  log('📨 메시지 수신: ' + message.body);
+                  const msg = JSON.parse(message.body);
+                  displayMessage(msg);
+              });
+
+              log(`📡 채팅방 "/topic/chat.${roomCode}"에 구독 완료`);
+              loadHistory(); // 연결 후 기록 로드
+          },
+          function (error) {
+              log('❌ STOMP 연결 실패: ' + error);
+              alert("WebSocket 연결 실패: " + error);
+          }
+      );
+  }
+
+  function sendMessage() {
+      const userId = parseInt(document.getElementById('userId').value);
+      const username = document.getElementById('username').value.trim();
+      const roomCode = document.getElementById('roomCode').value.trim();
+      const content = document.getElementById('messageInput').value.trim();
+      const isAiRequest = document.getElementById('isAiRequest').checked;
+
+      if (!roomCode || isNaN(userId) || !username || !content) {
+          alert("모든 필드를 입력하세요.");
+          return;
+      }
+
+      const message = {
+          userId: userId,
+          username: username,
+          content: content,
+          isAiRequest: isAiRequest
+      };
+
+      log('📤 메시지 전송: ' + JSON.stringify(message));
+      stompClient.send(`/ws/chat.${roomCode}`, {}, JSON.stringify(message));
+
+      document.getElementById('messageInput').value = '';
+      document.getElementById('isAiRequest').checked = false;
+  }
+
+  function sendTestMessage(content, isAi) {
+      if (!stompClient || !stompClient.connected) {
+          alert('먼저 연결하세요!');
+          return;
+      }
+
+      const userId = parseInt(document.getElementById('userId').value);
+      const username = document.getElementById('username').value.trim();
+      const roomCode = document.getElementById('roomCode').value.trim();
+
+      const message = {
+          userId: userId,
+          username: username,
+          content: content,
+          isAiRequest: isAi
+      };
+
+      log('📤 테스트 메시지 전송: ' + JSON.stringify(message));
+      stompClient.send(`/app/chat.${roomCode}`, {}, JSON.stringify(message));
+  }
+
+  async function loadHistory() {
+      const roomCode = document.getElementById('roomCode').value.trim();
+      if (!roomCode) return;
+
+      try {
+          log('📚 채팅 기록 로드 시작...');
+          const res = await fetch('http://localhost:8000/api/chat/history/' + roomCode);
+
+          if (res.ok) {
+              const messages = await res.json();
+              log(`📚 채팅 기록 ${messages.length}개 로드됨`);
+
+              messages.forEach(msg => {
+                  displayMessage(msg);
+              });
+          } else {
+              log("❌ 채팅 기록 로드 실패: " + res.status);
+          }
+      } catch (e) {
+          log("❌ 채팅 기록 요청 실패: " + e.message);
+      }
+  }
+
+  function displayMessage(msg) {
+      let display = '';
+
+      if (msg.username === 'AI Assistant' || (msg.places && msg.places.length > 0)) {
+          // AI 응답
+          display = `[${msg.createdAt}] 🤖 ${msg.username}: ${msg.content}\n`;
+
+          if (msg.places && msg.places.length > 0) {
+              display += '🍽️ 추천 장소:\n';
+              msg.places.forEach((place, index) => {
+                  display += `  ${index + 1}. ${place.name} (${place.category})\n`;
+                  display += `     주소: ${place.roadAddress || place.address || '정보없음'}\n`;
+                  display += `     점수: ${place.finalScore}, 유사도: ${(place.similarityScore * 100).toFixed(1)}%\n`;
+              });
+              display += '\n';
+          }
+      } else if (msg.isAiRequest) {
+          // 사용자 AI 요청
+          display = `[${msg.createdAt}] 🧠 ${msg.username} (AI요청): ${msg.content}\n`;
+      } else {
+          // 일반 사용자 메시지
+          display = `[${msg.createdAt}] 👤 ${msg.username}: ${msg.content}\n`;
+      }
+
+      document.getElementById('chat').value += display;
+      document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+  }
+
+  function log(message) {
+      console.log(message);
+      const timestamp = new Date().toLocaleTimeString();
+      document.getElementById('chat').value += `[${timestamp}] ${message}\n`;
+      document.getElementById('chat').scrollTop = document.getElementById('chat').scrollHeight;
+  }
+
+  // 엔터키로 메시지 전송
+  document.getElementById('messageInput').addEventListener('keypress', function(e) {
+      if (e.key === 'Enter') {
+          sendMessage();
+      }
+  });
+</script>
+</body>
+</html>

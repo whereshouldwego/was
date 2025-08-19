@@ -59,8 +59,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         // 브라우저를 생성된 URL로 리디렉션 
         String origin = request.getHeader("Origin");
         List<String> allowed = corsProps.getAllowedOrigins();
-//        String target = allowed.contains(origin) ? origin : allowed.get(0);
-        String target = "http://localhost:5173";    // 추후 수정 필요
+        String target = allowed.contains(origin) ? origin : allowed.get(0);
 
         // 액세스 토큰을 URL 파라미터로 추가
         String redirectUrl = target + "?accessToken=" + access;
