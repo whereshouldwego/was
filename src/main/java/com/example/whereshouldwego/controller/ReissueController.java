@@ -68,16 +68,16 @@ public class ReissueController {
             return new ResponseEntity<>("Refresh Token이 DB에 존재하지 않습니다.", HttpStatus.BAD_REQUEST);
         }
 
-        String username = jwtUtil.getUsername(refresh);
+        Long userId = jwtUtil.getUserId(refresh);
         String role = jwtUtil.getRole(refresh);
 
         // 새로운 Access Token 및 Refresh Token 생성
-        String newAccess = jwtUtil.createJwt("access", username, role, 3600000L);  // 1시간
-        String newRefresh = jwtUtil.createJwt("refresh", username, role, 1209600000L); // 14일
+        String newAccess = jwtUtil.createJwt("access", userId, role, 3600000L);  // 1시간
+        String newRefresh = jwtUtil.createJwt("refresh", userId, role, 1209600000L); // 14일
 
         // DB에 저장된 기존의 Refresh Token 삭제 후 새 Refresh Token 저장
         refreshRepository.deleteByRefresh(refresh);
-        addRefreshEntity(username, newRefresh, 1209600000L);
+        addRefreshEntity(userId, newRefresh, 1209600000L);
 
         // Access Token은 헤더에 담고 Refresh Token은 쿠키에 담아 반환
         response.setHeader("access", newAccess);
@@ -86,12 +86,12 @@ public class ReissueController {
         return new ResponseEntity<>(HttpStatus.OK);
     }
 
-    private void addRefreshEntity(String username, String refresh, Long expiredMs) {
+    private void addRefreshEntity(Long userId, String refresh, Long expiredMs) {
 
         Date date = new Date(System.currentTimeMillis() + expiredMs);
 
         Refresh savedRefresh = Refresh.builder()
-                .username(username)
+                .userId(userId)
                 .refresh(refresh)
                 .expiration(LocalDateTime.now().plusSeconds(1209600000L / 1000))
                 .build();

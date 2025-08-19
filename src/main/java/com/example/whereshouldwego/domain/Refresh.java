@@ -20,7 +20,7 @@ public class Refresh {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String username;
+    private Long userId;
     private String refresh;
     private LocalDateTime expiration;
 }

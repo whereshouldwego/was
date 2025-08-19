@@ -8,19 +8,19 @@ import lombok.Getter;
 @Builder
 public class UserDto {
 
-    private String username;
+    private Long userId;
     private String role;
 
     public static UserDto from(User user) {
         return UserDto.builder()
-                .username(user.getUsername())
+                .userId(user.getId())
                 .role(user.getRole())
                 .build();
     }
 
-    public static UserDto of(String username, String role) {
+    public static UserDto of(Long userId, String role) {
         return UserDto.builder()
-                .username(username)
+                .userId(userId)
                 .role(role)
                 .build();
     }

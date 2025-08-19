@@ -134,6 +134,7 @@
     const cursorDots = {}; // username -> {dot,label}
     function cursorConnect() {
         const room = document.getElementById('cursorRoom').value.trim();
+        const name = document.getElementById('chatName').value.trim();
         const tokenRaw = ensureBearer(document.getElementById('globalToken').value.trim());
         if (!room || !tokenRaw) { alert('Room/Token 필수'); return; }
 
@@ -156,7 +157,7 @@
             };
             const onMove = (e)=>{
                 // 스테이지 내 좌표만 보낼거면 offset 계산 가능 (지금은 뷰포트 좌표 그대로)
-                pending = { lat: e.clientY, lng: e.clientX };
+                pending = { username: name, lat: e.clientY, lng: e.clientX };
                 if (!rafId) rafId = requestAnimationFrame(sendLatest);
             };
             document.addEventListener('mousemove', onMove);

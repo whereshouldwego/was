@@ -97,8 +97,8 @@ public class UserService {
             }
 
             // 사용자 정보 가져오기
-            String username = jwtUtil.getUsername(refresh);
-            user = userRepository.findByUsername(username)
+            Long userId = jwtUtil.getUserId(refresh);
+            user = userRepository.findById(userId)
                     .orElseThrow(() -> new RuntimeException("해당 비회원 정보가 존재하지 않습니다."));
 
             // 기존 Refresh 토큰 삭제
@@ -106,12 +106,12 @@ public class UserService {
         }
 
         // access, refresh 토큰 생성
-        String newAccess = jwtUtil.createJwt("access", user.getUsername(), user.getRole(), 3600000L);
-        String newRefresh = jwtUtil.createJwt("refresh", user.getUsername(), user.getRole(), 1209600000L);
+        String newAccess = jwtUtil.createJwt("access", user.getId(), user.getRole(), 3600000L);
+        String newRefresh = jwtUtil.createJwt("refresh", user.getId(), user.getRole(), 1209600000L);
 
         // refresh 토큰 저장
         Refresh savedRefresh = Refresh.builder()
-                .username(user.getUsername())
+                .userId(user.getId())
                 .refresh(newRefresh)
                 .expiration(LocalDateTime.now().plusSeconds(1209600000L / 1000))
                 .build();

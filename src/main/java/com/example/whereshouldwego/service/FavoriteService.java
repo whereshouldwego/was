@@ -1,17 +1,15 @@
 package com.example.whereshouldwego.service;
 
 import com.example.whereshouldwego.domain.Favorite;
-import com.example.whereshouldwego.domain.User;
 import com.example.whereshouldwego.domain.Place;
+import com.example.whereshouldwego.domain.User;
 import com.example.whereshouldwego.dto.request.CreateFavoriteRequest;
 import com.example.whereshouldwego.dto.response.CreateFavoriteResponse;
-import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.repository.postgres.FavoriteRepository;
-import com.example.whereshouldwego.repository.postgres.UserRepository;
 import com.example.whereshouldwego.repository.postgres.PlaceRepository;
+import com.example.whereshouldwego.repository.postgres.UserRepository;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 

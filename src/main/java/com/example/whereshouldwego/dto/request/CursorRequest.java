@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 @AllArgsConstructor
 public class CursorRequest {
+    private String username;
     private Double lat;
     private Double lng;
 }

@@ -67,12 +67,12 @@ public class JWTFilter extends OncePerRequestFilter {
             return;
         }
 
-        // username, role 값을 획득
-        String username = jwtUtil.getUsername(accessToken);
+        // userId, role 값을 획득
+        Long userId = jwtUtil.getUserId(accessToken);
         String role = jwtUtil.getRole(accessToken);
 
         //UserDetails에 회원 정보 객체 담기
-        CustomUserDetails userDetails = new CustomUserDetails(UserDto.of(username, role));
+        CustomUserDetails userDetails = new CustomUserDetails(UserDto.of(userId, role));
 
         //스프링 시큐리티 인증 토큰 생성
         Authentication authToken = new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());

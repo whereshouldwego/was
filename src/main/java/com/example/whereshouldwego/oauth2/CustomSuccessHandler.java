@@ -34,7 +34,7 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
 
         CustomUserDetails customUserDetails = (CustomUserDetails) authentication.getPrincipal();
 
-        String username = customUserDetails.getUsername();
+        Long userId = customUserDetails.getUserId();
 
         Collection<? extends GrantedAuthority> authorities = authentication.getAuthorities();
         Iterator<? extends GrantedAuthority> iterator = authorities.iterator();
@@ -42,12 +42,12 @@ public class CustomSuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         String role = auth.getAuthority();
 
         // jwt 토큰 생성
-        String access = jwtUtil.createJwt("access", username, role, 3600000L);  // 1시간
-        String refresh = jwtUtil.createJwt("refresh", username, role, 1209600000L); // 14일
+        String access = jwtUtil.createJwt("access", userId, role, 3600000L);  // 1시간
+        String refresh = jwtUtil.createJwt("refresh", userId, role, 1209600000L); // 14일
 
         // refresh 토큰 저장
         Refresh savedRefresh = Refresh.builder()
-                .username(username)
+                .userId(userId)
                 .refresh(refresh)
                 .expiration(LocalDateTime.now().plusSeconds(1209600000L / 1000))
                 .build();

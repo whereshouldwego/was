@@ -1,13 +1,13 @@
 package com.example.whereshouldwego.handler;
 
+import com.example.whereshouldwego.config.RawWebSocketSessionRegistry;
 import com.example.whereshouldwego.dto.request.CursorRequest;
 import com.example.whereshouldwego.dto.response.CursorResponse;
-import com.example.whereshouldwego.dto.response.CustomUserDetails;
+import com.example.whereshouldwego.repository.postgres.RoomParticipantRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Component;
 import org.springframework.web.socket.CloseStatus;
@@ -16,26 +16,25 @@ import org.springframework.web.socket.WebSocketSession;
 import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import java.util.Collections;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import static com.example.whereshouldwego.messaging.RawWebSocketAuthInterceptor.ATTR_AUTH;
-import static com.example.whereshouldwego.messaging.RawWebSocketAuthInterceptor.ATTR_ROOM_CODE;
+import static com.example.whereshouldwego.messaging.RawWebSocketAuthInterceptor.*;
+
 
 @Component
 @RequiredArgsConstructor
 public class CursorWebSocketHandler extends TextWebSocketHandler {
 
-    private final ObjectMapper objectMapper = new ObjectMapper();
-
-    private final @Qualifier("websocketTaskExecutor")TaskExecutor taskExecutor;
-
     // roomCode -> sessions
-    private final Map<String, Set<WebSocketSession>> roomSessions = new ConcurrentHashMap<>();
-
+    private final ConcurrentHashMap<String, Set<WebSocketSession>> roomSessions = new ConcurrentHashMap<>();
     // sessionId -> roomCode
-    private final Map<String, String> sessionRoomMap = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, String> sessionRoomMap = new ConcurrentHashMap<>();
+
+    private final ObjectMapper objectMapper;
+    private final @Qualifier("websocketTaskExecutor") TaskExecutor taskExecutor;
+    private final RawWebSocketSessionRegistry rawWebSocketSessionRegistry;
+    private final RoomParticipantRepository roomParticipantRepository;
 
     @Override
     public void afterConnectionEstablished(WebSocketSession session) throws Exception {
@@ -45,12 +44,19 @@ public class CursorWebSocketHandler extends TextWebSocketHandler {
             return;
         }
 
+        Long roomId = (Long) session.getAttributes().get(ATTR_ROOM_ID);
+        Long userId = (Long) session.getAttributes().get(ATTR_USER_ID);
+        if (roomId != null && userId != null) {
+            rawWebSocketSessionRegistry.register(roomId, userId, session);
+        }
+
         roomSessions.computeIfAbsent(roomCode, k -> ConcurrentHashMap.newKeySet()).add(session);
         sessionRoomMap.put(session.getId(), roomCode);
     }
 
     @Override
     public void afterConnectionClosed(WebSocketSession session, CloseStatus status) {
+        rawWebSocketSessionRegistry.unregister(session);
         safeRemoveSession(session);
     }
 
@@ -61,17 +67,10 @@ public class CursorWebSocketHandler extends TextWebSocketHandler {
 
         if (roomCode == null || auth == null || auth.getPrincipal() == null) return;
 
-        String username = ((CustomUserDetails) auth.getPrincipal()).getUsername();
-
         CursorRequest cursorRequest = objectMapper.readValue(message.getPayload(), CursorRequest.class);
-        CursorResponse cursorResponse = CursorResponse.from(username, cursorRequest);
+        CursorResponse cursorResponse = CursorResponse.from(cursorRequest);
 
-        final String payload;
-        try {
-            payload = objectMapper.writeValueAsString(cursorResponse);
-        } catch (Exception ignore) {
-            return;
-        }
+        final String payload = objectMapper.writeValueAsString(cursorResponse);
 
         Set<WebSocketSession> sessions = roomSessions.getOrDefault(roomCode, Collections.emptySet());
         for (WebSocketSession s : sessions) {
@@ -84,6 +83,7 @@ public class CursorWebSocketHandler extends TextWebSocketHandler {
                         s.sendMessage(new TextMessage(payload));
                     }
                 } catch (Exception ignore) {
+                    rawWebSocketSessionRegistry.unregister(s);
                     safeRemoveSession(s);
                 }
             });
@@ -92,10 +92,10 @@ public class CursorWebSocketHandler extends TextWebSocketHandler {
 
     @Override
     public void handleTransportError(WebSocketSession session, Throwable exception) throws Exception {
+        rawWebSocketSessionRegistry.unregister(session);
         safeRemoveSession(session);
         if (session.isOpen()) session.close(CloseStatus.SERVER_ERROR);
     }
-
 
     private void safeRemoveSession(WebSocketSession session) {
         String roomCode = (String) session.getAttributes().get(ATTR_ROOM_CODE);

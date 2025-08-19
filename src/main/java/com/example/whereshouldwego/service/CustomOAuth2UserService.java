@@ -68,6 +68,6 @@ public class CustomOAuth2UserService extends DefaultOAuth2UserService {
             );
         }
 
-        return new CustomUserDetails(UserDto.of(user.getUsername(), user.getRole()));
+        return new CustomUserDetails(UserDto.of(user.getId(), user.getRole()));
     }
 }

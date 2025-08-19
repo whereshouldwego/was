@@ -15,9 +15,9 @@ public class CursorResponse {
     private Double lat;
     private Double lng;
 
-    public static CursorResponse from(String username, CursorRequest dto) {
+    public static CursorResponse from(CursorRequest dto) {
         return CursorResponse.builder()
-                .username(username)
+                .username(dto.getUsername())
                 .lat(dto.getLat())
                 .lng(dto.getLng())
                 .build();

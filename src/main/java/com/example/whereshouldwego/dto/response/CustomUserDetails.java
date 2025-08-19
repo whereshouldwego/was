@@ -35,9 +35,11 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
         return collection;
     }
 
+    public Long getUserId() { return userDto.getUserId(); }
+
     @Override
     public String getName() {
-        return userDto.getUsername();
+        return null;
     }
 
     @Override
@@ -47,7 +49,7 @@ public class CustomUserDetails implements UserDetails, OAuth2User {
 
     @Override
     public String getUsername() {
-        return userDto.getUsername();
+        return null;
     }
 
     @Override
