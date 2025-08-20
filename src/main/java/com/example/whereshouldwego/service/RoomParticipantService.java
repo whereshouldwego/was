@@ -35,7 +35,7 @@ public class RoomParticipantService {
                 .orElseThrow(() -> new RuntimeException("해당 방 코드를 가진 방을 찾을 수 없습니다."));
 
         // 사용자(User) 찾기
-        User user = userRepository.findByUsername(userDetails.getUsername())
+        User user = userRepository.findById(userDetails.getUserId())
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
 
         // 기존 참여 기록 확인

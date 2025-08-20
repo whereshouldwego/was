@@ -1,6 +1,7 @@
 package com.example.whereshouldwego.controller;
 
 import com.example.whereshouldwego.dto.request.ChatRequest;
+import com.example.whereshouldwego.dto.response.CustomUserDetails;
 import com.example.whereshouldwego.service.ChatService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -9,6 +10,7 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Controller;
+
 
 @Controller
 @RequiredArgsConstructor
@@ -21,6 +23,9 @@ public class ChatStompController {
                                   Authentication authentication,
                                   @DestinationVariable String roomCode
     ) {
-        chatService.handleAndBroadcast(request, authentication, roomCode);
+        CustomUserDetails principal = (CustomUserDetails) authentication.getPrincipal();
+        Long userId = principal.getUserId();
+
+        chatService.handleAndBroadcast(request, userId, roomCode);
     }
 }
