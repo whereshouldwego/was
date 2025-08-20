@@ -1,9 +1,9 @@
 //package com.example.whereshouldwego.controller;
 //
-//import com.example.whereshouldwego.domain.Favorite;
-//import com.example.whereshouldwego.domain.User;
-//import com.example.whereshouldwego.domain.Place;
-//import com.example.whereshouldwego.dto.request.CreateFavoriteRequest;
+//import com.example.whereshouldwego.features.place.domain.Favorite;
+//import com.example.whereshouldwego.features.user.domain.User;
+//import com.example.whereshouldwego.features.place.domain.Place;
+//import com.example.whereshouldwego.features.place.dto.request.CreateFavoriteRequest;
 //import com.example.whereshouldwego.repository.postgres.FavoriteRepository;
 //import com.example.whereshouldwego.repository.postgres.PlaceRepository;
 //import com.example.whereshouldwego.repository.postgres.UserRepository;

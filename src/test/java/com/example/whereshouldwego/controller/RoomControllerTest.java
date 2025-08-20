@@ -1,9 +1,8 @@
 package com.example.whereshouldwego.controller;
 
-import com.example.whereshouldwego.domain.Room;
-import com.example.whereshouldwego.repository.postgres.RoomRepository;
+import com.example.whereshouldwego.features.room.domain.Room;
+import com.example.whereshouldwego.features.room.repository.RoomRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;

@@ -1,21 +1,16 @@
 package com.example.whereshouldwego.service;
 
-import com.example.whereshouldwego.config.TestJwtConfig;
-import com.example.whereshouldwego.domain.User;
-import com.example.whereshouldwego.domain.Place;
-import com.example.whereshouldwego.dto.request.CreateFavoriteRequest;
-import com.example.whereshouldwego.dto.response.CreateFavoriteResponse;
-import com.example.whereshouldwego.jwt.JWTUtil;
-import com.example.whereshouldwego.repository.postgres.FavoriteRepository;
-import com.example.whereshouldwego.repository.postgres.PlaceRepository;
-import com.example.whereshouldwego.repository.postgres.UserRepository;
+import com.example.whereshouldwego.features.place.service.FavoriteService;
+import com.example.whereshouldwego.features.user.domain.User;
+import com.example.whereshouldwego.features.place.domain.Place;
+import com.example.whereshouldwego.features.place.repository.FavoriteRepository;
+import com.example.whereshouldwego.features.place.repository.PlaceRepository;
+import com.example.whereshouldwego.features.user.repository.UserRepository;
 import org.junit.jupiter.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-
-import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;

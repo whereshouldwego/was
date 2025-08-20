@@ -1,0 +1,73 @@
+package com.example.whereshouldwego.auth.security.oauth2;
+
+import com.example.whereshouldwego.features.user.domain.User;
+import com.example.whereshouldwego.features.user.dto.response.CustomUserDetails;
+import com.example.whereshouldwego.auth.dto.response.KakaoResponse;
+import com.example.whereshouldwego.auth.dto.response.OAuth2Response;
+import com.example.whereshouldwego.features.user.dto.response.UserDto;
+import com.example.whereshouldwego.features.user.repository.UserRepository;
+import lombok.RequiredArgsConstructor;
+import org.springframework.security.oauth2.client.userinfo.DefaultOAuth2UserService;
+import org.springframework.security.oauth2.client.userinfo.OAuth2UserRequest;
+import org.springframework.security.oauth2.core.OAuth2AuthenticationException;
+import org.springframework.security.oauth2.core.user.OAuth2User;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
+
+@Service
+@RequiredArgsConstructor
+@Transactional
+public class CustomOAuth2UserService extends DefaultOAuth2UserService {
+
+    private final UserRepository userRepository;
+
+    @Override
+    public OAuth2User loadUser(OAuth2UserRequest userRequest) throws OAuth2AuthenticationException {
+
+        OAuth2User oAuth2User = super.loadUser(userRequest);
+
+        String registrationId = userRequest.getClientRegistration().getRegistrationId();
+        OAuth2Response oAuth2Response = null;
+
+        if (registrationId.equals("kakao")) {
+
+            oAuth2Response = new KakaoResponse(oAuth2User.getAttributes());
+        } else {
+
+            return null;
+        }
+
+        // 리소스 서버에서 발급 받은 정보로 사용자를 특정할 아이디값을 만듦
+        String username = oAuth2Response.getProvider() + " " + oAuth2Response.getProviderId();
+        Optional<User> existData = userRepository.findByUsername(username);
+
+        User user;
+
+        if (existData.isEmpty()) {
+
+            user = User.builder()
+                    .username(username)
+                    .role("ROLE_MEMBER")
+                    .name(oAuth2Response.getName())
+                    .email(oAuth2Response.getEmail())
+                    .image(oAuth2Response.getImage())
+                    .build();
+
+            user = userRepository.save(user);
+
+        } else {
+            user = existData.get();
+            user.updateToSocialUser(
+                    user.getUsername(),
+                    user.getRole(),
+                    oAuth2Response.getName(),
+                    oAuth2Response.getEmail(),
+                    oAuth2Response.getImage()
+            );
+        }
+
+        return new CustomUserDetails(UserDto.of(user.getId(), user.getRole()));
+    }
+}

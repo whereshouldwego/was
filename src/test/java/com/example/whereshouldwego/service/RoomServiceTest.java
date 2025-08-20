@@ -1,7 +1,7 @@
 //package com.example.whereshouldwego.service;
 //
-//import com.example.whereshouldwego.domain.Room;
-//import com.example.whereshouldwego.domain.User;
+//import com.example.whereshouldwego.features.room.domain.Room;
+//import com.example.whereshouldwego.features.user.domain.User;
 //import com.example.whereshouldwego.repository.postgres.RoomParticipantRepository;
 //import com.example.whereshouldwego.repository.postgres.RoomRepository;
 //
