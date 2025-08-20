@@ -37,25 +37,7 @@ public class PlaceServiceTest {
                 .address("강원특별자치도 강릉시 주문진읍 교항리 48-32")
                 .roadAddress("강원특별자치도 강릉시 주문진읍 연주로 297-1")
                 .phone(null)
-                .aiSummary("{\n" +
-                        "  \"menu\": [\n" +
-                        "    \"라떼\",\n" +
-                        "    \"요거트\"\n" +
-                        "  ],\n" +
-                        "  \"mood\": [\n" +
-                        "    \"포근한 날씨\",\n" +
-                        "    \"무인카페\"\n" +
-                        "  ],\n" +
-                        "  \"feature\": [\n" +
-                        "    \"강릉 주문진 위치\",\n" +
-                        "    \"무인 운영\",\n" +
-                        "    \"가성비 좋음\",\n" +
-                        "    \"재방문 고객 많음\"\n" +
-                        "  ],\n" +
-                        "  \"purpose\": [\n" +
-                        "    \"간편한 카페 이용\"\n" +
-                        "  ]\n" +
-                        "}").categoryName("카페").build();
+                .categoryName("카페").build();
         when(placeRepository.findById(id)).thenReturn(Optional.of(place));
 
         PlaceResponse result = placeService.getPlaceById(id);

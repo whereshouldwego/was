@@ -27,7 +27,6 @@ public class PlaceRepositoryTest {
         System.out.println(place.getId());
         System.out.println(place.getName());
         System.out.println(place.getAddress());
-        System.out.println(place.getAiSummary());
     }
 
     @Test
