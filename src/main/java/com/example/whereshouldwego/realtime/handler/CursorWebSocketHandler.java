@@ -32,7 +32,8 @@ public class CursorWebSocketHandler extends TextWebSocketHandler {
     private final ConcurrentHashMap<String, String> sessionRoomMap = new ConcurrentHashMap<>();
 
     private final ObjectMapper objectMapper;
-    private final @Qualifier("websocketTaskExecutor") TaskExecutor taskExecutor;
+
+    private @Qualifier("clientOutboundChannelExecutor") TaskExecutor taskExecutor;
     private final RawWebSocketSessionRegistry rawWebSocketSessionRegistry;
     private final RoomParticipantRepository roomParticipantRepository;
 
