@@ -95,4 +95,32 @@ src/
 * **realtime**는 STOMP와 Raw WS 설정/핸들러/세션을 분리해 실시간 로직의 응집도를 높였습니다.
 * **auth/security/ws**는 STOMP 메시징 보안(인증/구독 검증)과 연계됩니다.
 
-## 6) 담당 역할
+### 6) 담당 역할
+
+<table>
+  <tr align="center" valign="top">
+    <td>
+      <a href="https://github.com/Yoo99">
+        <img src="https://github.com/Yoo99.png" width="150" height="150" alt="@member1" />
+      </a><br/>
+      <a href="https://github.com/Yoo99"><b>Yoo99</b></a>
+    </td>
+    <td>
+      <a href="https://github.com/haeri5655">
+        <img src="https://github.com/haeri5655.png" width="150" height="150" alt="@member2" />
+      </a><br/>
+      <a href="https://github.com/haeri5655"><b>haeri5655</b></a>
+    </td>
+    <td>
+      <a href="https://github.com/GomDue">
+        <img src="https://github.com/GomDue.png" width="150" height="150" alt="@your-id" />
+      </a><br/>
+      <a href="https://github.com/GomDue"><b>GomDue</b></a>
+    </td>
+  </tr>
+  <tr align="center">
+    <td><sub>Back-End 팀장, REST API 구축</sub></td>
+    <td><sub>OAuth2 기반 인증/인가 구현</sub></td>
+    <td><sub>WebSocket, STOMP 기반 실시간 통신 구현</sub></td>
+  </tr>
+</table>
