@@ -95,7 +95,7 @@ src/
 * **realtime**는 STOMP와 Raw WS 설정/핸들러/세션을 분리해 실시간 로직의 응집도를 높였습니다.
 * **auth/security/ws**는 STOMP 메시징 보안(인증/구독 검증)과 연계됩니다.
 
-### 6) 담당 역할
+## 6) 담당 역할
 
 <table>
   <tr align="center" valign="top">
